@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     "paginasweb.apps.PaginaswebConfig",
+    "cadastros.apps.CadastrosConfig",
 ]
 
 MIDDLEWARE = [
