@@ -1,7 +1,8 @@
 from django.urls import path
 
-from .views import CategoriaItemCreate, CidadeCreate, EstadoCreate, FornecedorCreate, FrotaCreate, ItemCreate, ItemPedidoCreate, PedidoCreate, View1, View2, View3, etc #importar views CREATE aqui
-from .views import View1, View2, View3, etc  # Importe views UPDATE aqui
+from .views import CategoriaItemCreate, CidadeCreate, EstadoCreate, FornecedorCreate, FrotaCreate, ItemCreate, ItemPedidoCreate, PedidoCreate
+from .views import EstadoUpdate, CidadeUpdate, FornecedorUpdate, FrotaUpdate, CategoriaItemUpdate, ItemUpdate, PedidoUpdate, ItemPedidoUpdate
+
 
 urlpatterns = [
     #VIEWS CREATE
@@ -13,12 +14,16 @@ urlpatterns = [
     path('cadastrar/item/', ItemCreate.as_view(), name='cadastrar-item'),
     path('cadastrar/itempedido/', ItemPedidoCreate.as_view(), name='cadastrar-itempedido'),
     path('cadastrar/pedido/', PedidoCreate.as_view(), name='cadastrar-pedido'),
-    # Adicione mais URLs conforme necessário
 
-    #VIEW UPDATE
-    path('editar/view1/<int:pk>/', View1.as_view(), name='view1-campus-update'),
+    #VIEWS UPDATE
+    path('editar/estado/<int:pk>/', EstadoUpdate.as_view(), name='estado-update'),
+    path('editar/cidade/<int:pk>/', CidadeUpdate.as_view(), name='cidade-update'),
+    path('editar/fornecedor/<int:pk>/', FornecedorUpdate.as_view(), name='fornecedor-update'),
+    path('editar/frota/<int:pk>/', FrotaUpdate.as_view(), name='frota-update'),
+    path('editar/categoriaitem/<int:pk>/', CategoriaItemUpdate.as_view(), name='categoriaitem-update'),
+    path('editar/item/<int:pk>/', ItemUpdate.as_view(), name='item-update'),
+    path('editar/pedido/<int:pk>/', PedidoUpdate.as_view(), name='pedido-update'),
+    path('editar/itempedido/<int:pk>/', ItemPedidoUpdate.as_view(), name='itempedido-update'),
+    
     #localhost:8000/editar/view1/1/ (id=1) - Int:pk tem a função de pegar o id do objeto que queremos editar
-    path('editar/view2/<int:pk>/', View2.as_view(), name='view2-curso-update'),
-    path('editar/view3/<int:pk>/', View3.as_view(), name='view3-status-update'),
-    # Adicione mais URLs conforme necessário
 ]
