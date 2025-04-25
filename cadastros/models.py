@@ -2,8 +2,18 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Estado(models.Model):
-    nome = models.CharField(max_length=100)
-    sigla = models.CharField(max_length=2)
+    SIGLA_ESTADOS_BRASILEIROS = [
+        ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
+        ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'), ('ES', 'Espírito Santo'),
+        ('GO', 'Goiás'), ('MA', 'Maranhão'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
+        ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'), ('PR', 'Paraná'),
+        ('PE', 'Pernambuco'), ('PI', 'Piauí'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
+        ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'),
+        ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins')
+    ]
+
+    nome = models.CharField(max_length=100,choices=SIGLA_ESTADOS_BRASILEIROS)
+    sigla = models.CharField(max_length=2, choices=SIGLA_ESTADOS_BRASILEIROS)
 
     def __str__(self):
         return self.sigla
@@ -12,6 +22,7 @@ class Estado(models.Model):
         verbose_name = "Estado"
         verbose_name_plural = "Estados"
         ordering = ['nome']
+
 
 
 class Cidade(models.Model):
@@ -33,6 +44,7 @@ class Fornecedor(models.Model):
     telefone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     cidade = models.ForeignKey(Cidade, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     criado_por = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):

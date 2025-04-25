@@ -27,7 +27,7 @@ class FornecedorCreate(CreateView):
     template_name = 'cadastros/form.html'
     model = Fornecedor
     success_url = reverse_lazy('index')
-    fields = ['nome', 'cnpj', 'telefone', 'email', 'cidade']
+    fields = ['nome', 'cnpj', 'telefone', 'email', 'cidade', 'estado']
     extra_context = {'titulo': 'Cadastrar Fornecedor'}
 
     def form_valid(self, form):
