@@ -1,9 +1,11 @@
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView, UpdateView
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
     CategoriaItem, Item, ItemPedido, Pedido
 )
+
 
 #################### VIEWS CREATE ####################################################################################################
 
@@ -96,13 +98,6 @@ class PedidoCreate(CreateView):
 
 #################### VIEWS UPDATE ####################################################################################################
 
-from django.views.generic import UpdateView
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
-from .models import (
-    Estado, Cidade, Fornecedor, Frota,
-    CategoriaItem, Item, Pedido, ItemPedido
-)
 
 
 class EstadoUpdate(UpdateView):
@@ -186,7 +181,21 @@ class ItemPedidoUpdate(UpdateView):
     def get_object(self, queryset=None):
         return get_object_or_404(ItemPedido, pk=self.kwargs['pk'], criado_por=self.request.user)
 
+
+#################### VIEWS LIST ####################################################################################################
+
+
+
+#Exemplo da Aula:
+
+class FornecedorList(ListView):
+    template_name = 'cadastros/listas/campus.html'
+    model = Fornecedor
+    
+
 #EXEMPLOS AULA 240425
+
+
 # class NomeDoModelCreate(CreateView):
 #     template_name = 'cadastros/form.html'
 #     model = NomeDoModel

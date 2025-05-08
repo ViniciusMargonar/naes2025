@@ -2,6 +2,8 @@ from django.urls import path
 
 from .views import CategoriaItemCreate, CidadeCreate, EstadoCreate, FornecedorCreate, FrotaCreate, ItemCreate, ItemPedidoCreate, PedidoCreate
 from .views import EstadoUpdate, CidadeUpdate, FornecedorUpdate, FrotaUpdate, CategoriaItemUpdate, ItemUpdate, PedidoUpdate, ItemPedidoUpdate
+from .views import FornecedorList
+#Importar aqui TAMBÉM as views para LIST
 
 
 urlpatterns = [
@@ -24,6 +26,9 @@ urlpatterns = [
     path('editar/item/<int:pk>/', ItemUpdate.as_view(), name='item-update'),
     path('editar/pedido/<int:pk>/', PedidoUpdate.as_view(), name='pedido-update'),
     path('editar/itempedido/<int:pk>/', ItemPedidoUpdate.as_view(), name='itempedido-update'),
+
+    #VIEWS LIST
+    path('listar/fornecedor/', FornecedorList.as_view(), name='fornecedor-list'),
     
     #localhost:8000/editar/view1/1/ (id=1) - Int:pk tem a função de pegar o id do objeto que queremos editar
 ]
