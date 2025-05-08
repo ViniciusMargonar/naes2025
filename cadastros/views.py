@@ -189,7 +189,7 @@ class ItemPedidoUpdate(UpdateView):
 #Exemplo da Aula:
 
 class FornecedorList(ListView):
-    template_name = 'cadastros/listas/campus.html'
+    template_name = 'cadastros/listas/fornecedor.html'
     model = Fornecedor
     
 
