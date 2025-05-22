@@ -1,8 +1,34 @@
 {% extends "paginasweb/modelo.html" %}
-
 {% load static %}
 
 {% block conteudo %}
-    <h1>Sobre nos<h1>
-        <p>Teste</p>
+<section class="pt-5 mt-5">
+    <div class="container px-4 px-lg-5 d-flex justify-content-center">
+        <div class="text-center">
+            <div class="card bg-light p-5 shadow rounded" style="max-width: 800px;">
+                <h1 class="text-dark text-uppercase mb-4">Sobre Nós</h1>
+                <p class="text-justify">
+                    O AgroTrack é um sistema desenvolvido para facilitar a gestão de pedidos e o controle logístico 
+                    de fornecedores e frotas no setor agrícola. Nosso objetivo é oferecer uma solução intuitiva, 
+                    eficiente e acessível para empresas que buscam modernizar seus processos operacionais.
+                </p>
+                <p class="text-justify">
+                    Com funcionalidades abrangentes e uma interface amigável, o AgroTrack permite o cadastro e 
+                    gerenciamento de estados, cidades, fornecedores, frotas, itens e pedidos, garantindo total 
+                    controle e rastreabilidade das informações.
+                </p>
+                <p class="text-justify">
+                    Nosso compromisso é com a inovação, qualidade e simplicidade no uso, sempre buscando contribuir 
+                    para o crescimento sustentável do agronegócio brasileiro.
+                </p>
+                <p class="text-justify mt-4">
+                    Abaixo, apresentamos o diagrama de classes que estrutura a lógica do sistema AgroTrack:
+                </p>
+                <div class="d-flex justify-content-center">
+                    <img src="{% static 'assets/img/diagramaClasse.jpg' %}" alt="Diagrama de Classe" class="rounded shadow" style="width: 50%;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
