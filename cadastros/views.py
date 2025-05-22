@@ -185,12 +185,12 @@ class ItemPedidoUpdate(UpdateView):
 #################### VIEWS LIST ####################################################################################################
 
 class EstadoList(ListView):
-    template_name = 'cadastros/listas/estado.html'
+    template_name = 'listas/estado.html'
     model = Estado
 
 
 class CidadeList(ListView):
-    template_name = 'cadastros/listas/cidade.html'
+    template_name = 'listas/cidade.html'
     model = Cidade
 
 
@@ -200,27 +200,27 @@ class FornecedorList(ListView):
 
 
 class FrotaList(ListView):
-    template_name = 'cadastros/listas/frota.html'
+    template_name = 'listas/frota.html'
     model = Frota
 
 
 class CategoriaItemList(ListView):
-    template_name = 'cadastros/listas/categoriaitem.html'
+    template_name = 'listas/categoriaitem.html'
     model = CategoriaItem
 
 
 class ItemList(ListView):
-    template_name = 'cadastros/listas/item.html'
+    template_name = 'listas/item.html'
     model = Item
 
 
 class PedidoList(ListView):
-    template_name = 'cadastros/listas/pedido.html'
+    template_name = 'listas/pedido.html'
     model = Pedido
 
 
 class ItemPedidoList(ListView):
-    template_name = 'cadastros/listas/itempedido.html'
+    template_name = 'listas/itempedido.html'
     model = ItemPedido
 
 
