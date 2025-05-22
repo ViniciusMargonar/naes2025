@@ -1,28 +1,30 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Estado(models.Model):
-    SIGLA_ESTADOS_BRASILEIROS = [
-        ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
-        ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'), ('ES', 'Espírito Santo'),
-        ('GO', 'Goiás'), ('MA', 'Maranhão'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
-        ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'), ('PR', 'Paraná'),
-        ('PE', 'Pernambuco'), ('PI', 'Piauí'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
-        ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'),
-        ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins')
-    ]
+SIGLAS = [
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+]
 
-    nome = models.CharField(max_length=100,choices=SIGLA_ESTADOS_BRASILEIROS)
-    sigla = models.CharField(max_length=2, choices=SIGLA_ESTADOS_BRASILEIROS)
+ESTADOS = [
+    'Acre', 'Alagoas', 'Amapá', 'Amazonas', 'Bahia', 'Ceará', 'Distrito Federal', 'Espírito Santo',
+    'Goiás', 'Maranhão', 'Mato Grosso', 'Mato Grosso do Sul', 'Minas Gerais', 'Pará', 'Paraíba',
+    'Paraná', 'Pernambuco', 'Piauí', 'Rio de Janeiro', 'Rio Grande do Norte', 'Rio Grande do Sul',
+    'Rondônia', 'Roraima', 'Santa Catarina', 'São Paulo', 'Sergipe', 'Tocantins'
+]
+
+class Estado(models.Model):
+    nome = models.CharField(max_length=100, choices=[(e, e) for e in ESTADOS])
+    sigla = models.CharField(max_length=2, choices=[(s, s) for s in SIGLAS])
 
     def __str__(self):
-        return self.sigla
+        return f"{self.nome} - {self.sigla}"
 
     class Meta:
         verbose_name = "Estado"
         verbose_name_plural = "Estados"
         ordering = ['nome']
-
 
 
 class Cidade(models.Model):

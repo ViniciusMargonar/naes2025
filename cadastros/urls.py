@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import CategoriaItemCreate, CidadeCreate, EstadoCreate, FornecedorCreate, FrotaCreate, ItemCreate, ItemPedidoCreate, PedidoCreate
 from .views import EstadoUpdate, CidadeUpdate, FornecedorUpdate, FrotaUpdate, CategoriaItemUpdate, ItemUpdate, PedidoUpdate, ItemPedidoUpdate
-from .views import FornecedorList
+from .views import EstadoList, CidadeList, FornecedorList, FrotaList, CategoriaItemList, ItemList, PedidoList, ItemPedidoList
 #Importar aqui TAMBÉM as views para LIST
 
 
@@ -28,7 +28,14 @@ urlpatterns = [
     path('editar/itempedido/<int:pk>/', ItemPedidoUpdate.as_view(), name='itempedido-update'),
 
     #VIEWS LIST
+    path('listar/estado/', EstadoList.as_view(), name='estado-list'),
+    path('listar/cidade/', CidadeList.as_view(), name='cidade-list'),
     path('listar/fornecedor/', FornecedorList.as_view(), name='fornecedor-list'),
+    path('listar/frota/', FrotaList.as_view(), name='frota-list'),
+    path('listar/categoriaitem/', CategoriaItemList.as_view(), name='categoriaitem-list'),
+    path('listar/item/', ItemList.as_view(), name='item-list'),
+    path('listar/pedido/', PedidoList.as_view(), name='pedido-list'),
+    path('listar/itempedido/', ItemPedidoList.as_view(), name='itempedido-list'),
     
     #localhost:8000/editar/view1/1/ (id=1) - Int:pk tem a função de pegar o id do objeto que queremos editar
 ]
