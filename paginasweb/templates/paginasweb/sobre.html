@@ -2,32 +2,88 @@
 {% load static %}
 
 {% block conteudo %}
-<section class="pt-5 mt-5">
-    <div class="container px-4 px-lg-5 d-flex justify-content-center">
-        <div class="text-center">
-             <div class="p-5" style="max-width: 800px;">
-                <h1 class="text-dark text-uppercase mb-4">Sobre Nós</h1>
-                <p class="text-justify">
-                    O AgroTrack é um sistema desenvolvido para facilitar a gestão de pedidos e o controle logístico 
-                    de fornecedores e frotas no setor agrícola. Nosso objetivo é oferecer uma solução intuitiva, 
-                    eficiente e acessível para empresas que buscam modernizar seus processos operacionais.
-                </p>
-                <p class="text-justify">
-                    Com funcionalidades abrangentes e uma interface amigável, o AgroTrack permite o cadastro e 
-                    gerenciamento de estados, cidades, fornecedores, frotas, itens e pedidos, garantindo total 
-                    controle e rastreabilidade das informações.
-                </p>
-                <p class="text-justify">
-                    Nosso compromisso é com a inovação, qualidade e simplicidade no uso, sempre buscando contribuir 
-                    para o crescimento sustentável do agronegócio brasileiro.
-                </p>
-                <h1 class="text-dark text-uppercase mb-4">Diagrama de Classe</h1>
-                <div class="d-flex justify-content-center">
-                    <img src="{% static 'assets/img/diagramaClasse.jpg' %}" alt="Diagrama de Classe" class="rounded shadow" style="width: 50%;">
+<section class="py-5 mt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Cabeçalho -->
+                <div class="text-center mb-5">
+                    <h1 class="text-dark fw-light mb-3">Sobre o AgroTrack</h1>
+                    <div class="border-bottom border-2 border-primary d-inline-block" style="width: 100px;"></div>
                 </div>
-                <h1 class="text-dark text-uppercase mb-4">Diagrama de Caso de Uso</h1>
-                <div class="d-flex justify-content-center">
-                    <img src="{% static 'assets/img/diagramaCaso.jpeg' %}" alt="Diagrama de Caso de Uso" class="rounded shadow" style="width: 70%;">
+
+                <!-- Conteúdo Principal -->
+                <div class="content-section mb-5">
+                    <div class="row align-items-center mb-5">
+                        <div class="col-md-6">
+                            <h3 class="fw-light text-primary mb-3">Nossa Missão</h3>
+                            <p class="text-muted lh-lg">
+                                Facilitar a gestão de pedidos e o controle logístico de fornecedores no setor agrícola 
+                                com uma solução intuitiva e eficiente.
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <i class="fas fa-seedling fa-4x text-primary opacity-75"></i>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-5">
+                        <div class="col-md-6 text-center order-md-2">
+                            <i class="fas fa-chart-line fa-4x text-primary opacity-75"></i>
+                        </div>
+                        <div class="col-md-6 order-md-1">
+                            <h3 class="fw-light text-primary mb-3">Funcionalidades</h3>
+                            <p class="text-muted lh-lg">
+                                Gerenciamento completo de fornecedores, itens e pedidos com total controle 
+                                e rastreabilidade das informações.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-5">
+                        <div class="col-md-6">
+                            <h3 class="fw-light text-primary mb-3">Compromisso</h3>
+                            <p class="text-muted lh-lg">
+                                Inovação, qualidade e simplicidade para o crescimento sustentável 
+                                do agronegócio brasileiro.
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <i class="fas fa-handshake fa-4x text-primary opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Diagramas -->
+                <div class="diagrams-section">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-light text-dark mb-3">Documentação Técnica</h2>
+                        <div class="border-bottom border-2 border-primary d-inline-block" style="width: 80px;"></div>
+                    </div>
+
+                    <!-- Diagrama de Classe -->
+                    <div class="diagram-card mb-4">
+                        <div class="text-center mb-3">
+                            <h4 class="fw-light text-primary">Diagrama de Classes</h4>
+                        </div>
+                        <div class="image-container">
+                            <img src="{% static 'assets/img/diagramaClasse.jpg' %}" 
+                                 alt="Diagrama de Classe" 
+                                 class="img-fluid rounded shadow-sm">
+                        </div>
+                    </div>
+
+                    <!-- Diagrama de Caso de Uso -->
+                    <div class="diagram-card">
+                        <div class="text-center mb-3">
+                            <h4 class="fw-light text-primary">Diagrama de Casos de Uso</h4>
+                        </div>
+                        <div class="image-container">
+                            <img src="{% static 'assets/img/diagramaCaso.jpeg' %}" 
+                                 alt="Diagrama de Caso de Uso" 
+                                 class="img-fluid rounded shadow-sm">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -4,73 +4,124 @@
 {% block titulo %}AgroTrack - Sistema de Gestão de Pedidos{% endblock %}
 
 {% block conteudo %}
-<!-- Masthead-->
-<header class="masthead">
-    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
-        <div class="d-flex justify-content-center">
-            <div class="text-center">
-                <h1 class="text-white text-uppercase m-0">AgroTrack</h1>
-                <h2 class="text-white mx-auto mt-2 mb-5">O seu sistema de gestão de pedidos.</h2>
-                <a class="btn btn-primary" href="#projects">Saiba mais</a>
+<!-- Hero Section Modernizado -->
+<header class="hero-section">
+    <div class="container px-4 px-lg-5 h-100">
+        <div class="row h-100 align-items-center justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="hero-title text-white mb-4">AgroTrack</h1>
+                <h2 class="hero-subtitle text-white-75 mb-4">
+                    Simplifique a gestão do seu agronegócio
+                </h2>
+                <p class="hero-description text-white-50 mb-5">
+                    Controle total de pedidos, fornecedores e logística em uma plataforma intuitiva e moderna.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary btn-lg me-3" href="/sobre/">
+                        <i class="fas fa-info-circle me-2"></i>Saiba Mais
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </header>
 
-<!-- About-->
-<section class="about-section text-center" id="about">
+<!-- Features Section -->
+<section class="features-section py-5" id="features">
     <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-lg-8">
-                <h2 class="text-white mb-4">Desenvolvido com Bootstrap 5</h2>
-                <p class="text-white-50">
-                    Este sistema de controle de pedidos foi criado com foco em agilidade e organização. Totalmente responsivo, permite cadastrar, listar e acompanhar pedidos pendentes com facilidade. Ideal para empresas que buscam mais controle e eficiência no processo de compras.
-                </p>
+        <div class="text-center mb-5">
+            <h2 class="section-title">Por que escolher o AgroTrack?</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-tractor"></i>
+                    </div>
+                    <h4 class="feature-title">Gestão Completa</h4>
+                    <p class="feature-description">
+                        Gerencie fornecedores, produtos, pedidos e entregas em um só lugar.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card text-center h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="feature-title">Controle em Tempo Real</h4>
+                    <p class="feature-description">
+                        Acompanhe o status de todos os seus pedidos e prazos de entrega.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card text-center h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4 class="feature-title">Acesso Anywhere</h4>
+                    <p class="feature-description">
+                        Interface responsiva para acesso em qualquer dispositivo, a qualquer hora.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Projects-->
-<section class="projects-section bg-light" id="projects">
+<!-- Stats Section -->
+<section class="stats-section py-5 bg-primary text-white">
     <div class="container px-4 px-lg-5">
-        <!-- Featured Project Row-->
-        <div class="row gx-0 mb-4 mb-lg-5 align-items-center">
-            <div class="col-xl-8 col-lg-7"><img class="img-fluid mb-3 mb-lg-0" src="{% static 'assets/img/bg-masthead.jpg' %}" alt="..." /></div>
-            <div class="col-xl-4 col-lg-5">
-                <div class="featured-text text-center text-lg-left">
-                    <h4>Tudo em um só lugar!</h4>
-                    <p class="text-black-50 mb-0">Gerencie todos os seus pedidos, fornecedores e itens de forma simples e rápida com um sistema prático, eficiente e intuitivo.</p>
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">100+</h3>
+                    <p class="stat-label">Fornecedores Ativos</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">24/7</h3>
+                    <p class="stat-label">Disponibilidade</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">99%</h3>
+                    <p class="stat-label">Satisfação</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">∞</h3>
+                    <p class="stat-label">Possibilidades</p>
                 </div>
             </div>
         </div>
-        
-        <!-- Project One Row-->
-        <div class="row gx-0 mb-5 mb-lg-0 justify-content-center">
-            <div class="col-lg-6"><img class="img-fluid" src="{% static 'assets/img/demo-image-01.jpg' %}" alt="..." /></div>
-            <div class="col-lg-6">
-                <div class="bg-black text-center h-100 project">
-                    <div class="d-flex h-100">
-                        <div class="project-text w-100 my-auto text-center text-lg-left">
-                            <h4 class="text-white">100% De Produção</h4>
-                            <p class="mb-0 text-white-50">Acompanhe e garanta que seus fornecedores cumpram os prazos de entrega!</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Project Two Row-->
-        <div class="row gx-0 justify-content-center">
-            <div class="col-lg-6"><img class="img-fluid" src="{% static 'assets/img/demo-image-02.jpg' %}" alt="..." /></div>
-            <div class="col-lg-6 order-lg-first">
-                <div class="bg-black text-center h-100 project">
-                    <div class="d-flex h-100">
-                        <div class="project-text w-100 my-auto text-center text-lg-right">
-                            <h4 class="text-white">Disponibilidade</h4>
-                            <p class="mb-0 text-white-50">Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>
-                        </div>
-                    </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-light">
+    <div class="container px-4 px-lg-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="cta-title mb-4">Pronto para começar?</h2>
+                <p class="cta-description mb-4">
+                    Transforme a gestão do seu agronegócio hoje mesmo. É rápido, fácil e gratuito para começar.
+                </p>
+                <div class="cta-actions">
+                    <a class="btn btn-primary btn-lg me-3" href="/cadastros/fornecedor/">
+                        <i class="fas fa-user-plus me-2"></i>Cadastrar Fornecedor
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg" href="/sobre/">
+                        <i class="fas fa-info-circle me-2"></i>Saber Mais
+                    </a>
                 </div>
             </div>
         </div>
