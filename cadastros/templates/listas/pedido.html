@@ -1,0 +1,83 @@
+{% extends "paginasweb/modelo.html" %}
+{% load static %}
+
+{% block conteudo %}
+<section class="py-5 mt-5">
+    <div class="container px-4 px-lg-5">
+        <div class="mb-5">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="text-dark fw-light mb-2">Pedidos</h1>
+                    <div class="border-bottom border-2 border-primary" style="width: 80px;"></div>
+                </div>
+                <a class="btn-add-round" href="{% url 'cadastrar-pedido' %}" title="Cadastrar Novo Pedido">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+
+            <!-- Tabela Modernizada -->
+            <div class="table-container">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fornecedor</th>
+                            <th>Data do Pedido</th>
+                            <th>Status</th>
+                            <th>Valor Total</th>
+                            <th>Cadastrado por</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in object_list %}
+                        <tr>
+                            <td class="fw-bold text-primary">#{{ pedido.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-shopping-cart text-primary me-2"></i>
+                                    <strong>{{ pedido.fornecedor.nome }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ pedido.data_pedido|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if pedido.status == 'pendente' %}
+                                    <span class="badge bg-warning text-dark">Pendente</span>
+                                {% elif pedido.status == 'em_andamento' %}
+                                    <span class="badge bg-info">Em Andamento</span>
+                                {% else %}
+                                    <span class="badge bg-success">Finalizado</span>
+                                {% endif %}
+                            </td>
+                            <td>R$ {{ pedido.valor_total|floatformat:2 }}</td>
+                            <td>
+                                <small class="text-muted">{{ pedido.criado_por.username }}</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'pedido-update' pedido.id %}" 
+                                       class="btn btn-outline-primary btn-sm" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="empty-state">
+                                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Nenhum pedido cadastrado</h5>
+                                    <p class="text-muted mb-0">Clique no botão + para adicionar o primeiro pedido.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
