@@ -11206,8 +11206,8 @@ body {
 }
 
 .btn-add-round {
-    position: absolute;
-    right: 0;
+    position: static;
+    right: auto;
     width: 40px;
     height: 40px;
     background-color: #27352d !important;
@@ -11219,6 +11219,7 @@ body {
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: none;
+    flex-shrink: 0;
 }
 
 .btn-add-round i,

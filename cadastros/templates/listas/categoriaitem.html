@@ -6,8 +6,8 @@
     <div class="container px-4 px-lg-5">
         <div class="mb-5">
             <!-- Cabeçalho -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
+            <div class="d-flex align-items-center mb-4">
+                <div class="me-3">
                     <h1 class="text-dark fw-light mb-2">Categorias de Itens</h1>
                     <div class="border-bottom border-2 border-primary" style="width: 80px;"></div>
                 </div>
@@ -45,6 +45,10 @@
                                     <a href="{% url 'categoriaitem-update' categoria.id %}" 
                                        class="btn btn-outline-primary btn-sm" title="Editar">
                                         <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'categoriaitem-deletar' categoria.id %}" 
+                                       class="btn btn-outline-danger btn-sm" title="Excluir">
+                                        <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
                             </td>

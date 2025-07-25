@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import CategoriaItemCreate, CidadeCreate, EstadoCreate, FornecedorCreate, FrotaCreate, ItemCreate, ItemPedidoCreate, PedidoCreate
 from .views import EstadoUpdate, CidadeUpdate, FornecedorUpdate, FrotaUpdate, CategoriaItemUpdate, ItemUpdate, PedidoUpdate, ItemPedidoUpdate
+from .views import EstadoDelete, CidadeDelete, FornecedorDelete, FrotaDelete, CategoriaItemDelete, ItemDelete, PedidoDelete, ItemPedidoDelete
 from .views import EstadoList, CidadeList, FornecedorList, FrotaList, CategoriaItemList, ItemList, PedidoList, ItemPedidoList
 #Importar aqui TAMBÉM as views para LIST
 
@@ -26,6 +27,16 @@ urlpatterns = [
     path('editar/item/<int:pk>/', ItemUpdate.as_view(), name='item-update'),
     path('editar/pedido/<int:pk>/', PedidoUpdate.as_view(), name='pedido-update'),
     path('editar/itempedido/<int:pk>/', ItemPedidoUpdate.as_view(), name='itempedido-update'),
+
+    #VIEWS DELETE
+    path('deletar/estado/<int:pk>/', EstadoDelete.as_view(), name='estado-deletar'),
+    path('deletar/cidade/<int:pk>/', CidadeDelete.as_view(), name='cidade-deletar'),
+    path('deletar/fornecedor/<int:pk>/', FornecedorDelete.as_view(), name='fornecedor-deletar'),
+    path('deletar/frota/<int:pk>/', FrotaDelete.as_view(), name='frota-deletar'),
+    path('deletar/categoriaitem/<int:pk>/', CategoriaItemDelete.as_view(), name='categoriaitem-deletar'),
+    path('deletar/item/<int:pk>/', ItemDelete.as_view(), name='item-deletar'),
+    path('deletar/pedido/<int:pk>/', PedidoDelete.as_view(), name='pedido-deletar'),
+    path('deletar/itempedido/<int:pk>/', ItemPedidoDelete.as_view(), name='itempedido-deletar'),
 
     #VIEWS LIST
     path('listar/estado/', EstadoList.as_view(), name='estado-list'),
