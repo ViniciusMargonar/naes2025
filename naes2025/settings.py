@@ -94,7 +94,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "postgres",
         "USER": "postgres.liolcjmezuckieeecqik",
-        "PASSWORD": "Vi160220",
+        "PASSWORD": "margonarnaes2025",
         "HOST": "aws-0-sa-east-1.pooler.supabase.com",
         "PORT": "5432",
     }
@@ -136,6 +136,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = 'static_gcloud/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
