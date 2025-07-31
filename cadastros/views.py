@@ -3,222 +3,204 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
     CategoriaItem, Item, ItemPedido, Pedido
 )
 
 
+class SuccessDeleteMixin:
+    """Mixin para adicionar mensagem de sucesso em DeleteView"""
+    success_message = "Registro excluído com sucesso!"
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, self.success_message)
+        return super().delete(request, *args, **kwargs)
+
+
 #################### VIEWS CREATE ####################################################################################################
 
-class EstadoCreate(LoginRequiredMixin, CreateView):
+class EstadoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = Estado
     success_url = reverse_lazy('estado-list')
     fields = ['nome', 'sigla']
     extra_context = {'titulo': 'Cadastrar Estado'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Estado cadastrado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Estado cadastrado com sucesso!"
 
-class CidadeCreate(LoginRequiredMixin, CreateView):
+class CidadeCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = Cidade
     success_url = reverse_lazy('cidade-list')
     fields = ['nome', 'estado']
     extra_context = {'titulo': 'Cadastrar Cidade'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Cidade cadastrada com sucesso!')
-        return super().form_valid(form)
+    success_message = "Cidade cadastrada com sucesso!"
 
-class FornecedorCreate(LoginRequiredMixin, CreateView):
+class FornecedorCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = Fornecedor
     success_url = reverse_lazy('fornecedor-list')
     fields = ['nome', 'cnpj', 'telefone', 'email', 'cidade', 'estado']
     extra_context = {'titulo': 'Cadastrar Fornecedor'}
+    success_message = "Fornecedor cadastrado com sucesso!"
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-        messages.success(self.request, 'Fornecedor cadastrado com sucesso!')
         return super().form_valid(form)
 
 
-class FrotaCreate(LoginRequiredMixin, CreateView):
+class FrotaCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = Frota
     success_url = reverse_lazy('frota-list')
     fields = ['prefixo', 'descricao', 'ano']
     extra_context = {'titulo': 'Cadastrar Frota'}
+    success_message = "Frota cadastrada com sucesso!"
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-        messages.success(self.request, 'Frota cadastrada com sucesso!')
         return super().form_valid(form)
 
 
-class CategoriaItemCreate(LoginRequiredMixin, CreateView):
+class CategoriaItemCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = CategoriaItem
     success_url = reverse_lazy('categoriaitem-list')
     fields = ['nome']
     extra_context = {'titulo': 'Cadastrar Categoria de Item'}
+    success_message = "Categoria cadastrada com sucesso!"
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-        messages.success(self.request, 'Categoria cadastrada com sucesso!')
         return super().form_valid(form)
 
 
-class ItemCreate(LoginRequiredMixin, CreateView):
+class ItemCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = Item
     success_url = reverse_lazy('item-list')
     fields = ['nome', 'categoria']
     extra_context = {'titulo': 'Cadastrar Item'}
+    success_message = "Item cadastrado com sucesso!"
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-        messages.success(self.request, 'Item cadastrado com sucesso!')
         return super().form_valid(form)
 
 
-class ItemPedidoCreate(LoginRequiredMixin, CreateView):
+class ItemPedidoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = ItemPedido
     success_url = reverse_lazy('itempedido-list')
     fields = ['item', 'frota', 'pedido', 'status', 'quantidade', 'valor_unitario']
     extra_context = {'titulo': 'Cadastrar Item do Pedido'}
+    success_message = "Item do pedido cadastrado com sucesso!"
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-        messages.success(self.request, 'Item do pedido cadastrado com sucesso!')
+    def form_valid(self, form):
+        form.instance.criado_por = self.request.user
         return super().form_valid(form)
 
 
-class PedidoCreate(LoginRequiredMixin, CreateView):
+class PedidoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
     model = Pedido
     success_url = reverse_lazy('pedido-list')
     fields = ['fornecedor', 'descricao', 'previsao_entrega', 'status']
     extra_context = {'titulo': 'Cadastrar Pedido'}
+    success_message = "Pedido cadastrado com sucesso!"
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-        messages.success(self.request, 'Pedido cadastrado com sucesso!')
         return super().form_valid(form)
 
 #################### VIEWS UPDATE ####################################################################################################
 
-class EstadoUpdate(LoginRequiredMixin, UpdateView):
+class EstadoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Estado
     success_url = reverse_lazy('estado-list')
     fields = ['nome', 'sigla']
     extra_context = {'titulo': 'Atualizar Estado'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Estado atualizado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Estado atualizado com sucesso!"
 
-class CidadeUpdate(LoginRequiredMixin, UpdateView):
+class CidadeUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Cidade
     success_url = reverse_lazy('cidade-list')
     fields = ['nome', 'estado']
     extra_context = {'titulo': 'Atualizar Cidade'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Cidade atualizada com sucesso!')
-        return super().form_valid(form)
+    success_message = "Cidade atualizada com sucesso!"
 
-class FornecedorUpdate(LoginRequiredMixin, UpdateView):
+class FornecedorUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Fornecedor
     success_url = reverse_lazy('fornecedor-list')
     fields = ['nome', 'cnpj', 'telefone', 'email', 'cidade']
     extra_context = {'titulo': 'Atualizar Fornecedor'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Fornecedor atualizado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Fornecedor atualizado com sucesso!"
     
     def get_object(self, queryset=None):
         return get_object_or_404(Fornecedor, pk=self.kwargs['pk'])
 
 
-class FrotaUpdate(LoginRequiredMixin, UpdateView):
+class FrotaUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Frota
     success_url = reverse_lazy('frota-list')
     fields = ['prefixo', 'descricao', 'ano']
     extra_context = {'titulo': 'Atualizar Frota'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Frota atualizada com sucesso!')
-        return super().form_valid(form)
+    success_message = "Frota atualizada com sucesso!"
     
     def get_object(self, queryset=None):
         return get_object_or_404(Frota, pk=self.kwargs['pk'])
 
 
-class CategoriaItemUpdate(LoginRequiredMixin, UpdateView):
+class CategoriaItemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = CategoriaItem
     success_url = reverse_lazy('categoriaitem-list')
     fields = ['nome']
     extra_context = {'titulo': 'Atualizar Categoria de Item'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Categoria atualizada com sucesso!')
-        return super().form_valid(form)
+    success_message = "Categoria atualizada com sucesso!"
 
     def get_object(self, queryset=None):
         return get_object_or_404(CategoriaItem, pk=self.kwargs['pk'])
 
 
-class ItemUpdate(LoginRequiredMixin, UpdateView):
+class ItemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Item
     success_url = reverse_lazy('item-list')
     fields = ['nome', 'categoria']
     extra_context = {'titulo': 'Atualizar Item'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Item atualizado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Item atualizado com sucesso!"
 
     def get_object(self, queryset=None):
         return get_object_or_404(Item, pk=self.kwargs['pk'])
 
 
-class PedidoUpdate(LoginRequiredMixin, UpdateView):
+class PedidoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Pedido
     success_url = reverse_lazy('pedido-list')
     fields = ['fornecedor', 'descricao', 'previsao_entrega', 'status']
     extra_context = {'titulo': 'Atualizar Pedido'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Pedido atualizado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Pedido atualizado com sucesso!"
 
     def get_object(self, queryset=None):
         return get_object_or_404(Pedido, pk=self.kwargs['pk'])
 
 
-class ItemPedidoUpdate(LoginRequiredMixin, UpdateView):
+class ItemPedidoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = ItemPedido
     success_url = reverse_lazy('itempedido-list')
     fields = ['item', 'frota', 'pedido', 'status', 'quantidade', 'valor_unitario']
     extra_context = {'titulo': 'Atualizar Item do Pedido'}
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Item do pedido atualizado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Item do pedido atualizado com sucesso!"
 
     def get_object(self, queryset=None):
         return get_object_or_404(ItemPedido, pk=self.kwargs['pk'])
@@ -226,77 +208,53 @@ class ItemPedidoUpdate(LoginRequiredMixin, UpdateView):
 
 #################### VIEWS DELETE ####################################################################################################
 
-class EstadoDelete(LoginRequiredMixin, DeleteView):
+class EstadoDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Estado
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('estado-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Estado excluído com sucesso!"
 
-class CidadeDelete(LoginRequiredMixin, DeleteView):
+class CidadeDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Cidade
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('cidade-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Cidade excluída com sucesso!"
 
-class FornecedorDelete(LoginRequiredMixin, DeleteView):
+class FornecedorDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Fornecedor
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('fornecedor-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Fornecedor excluído com sucesso!"
 
-class FrotaDelete(LoginRequiredMixin, DeleteView):
+class FrotaDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Frota
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('frota-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Frota excluída com sucesso!"
 
-class CategoriaItemDelete(LoginRequiredMixin, DeleteView):
+class CategoriaItemDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = CategoriaItem
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('categoriaitem-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Categoria excluída com sucesso!"
 
-class ItemDelete(LoginRequiredMixin, DeleteView):
+class ItemDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Item
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('item-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Item excluído com sucesso!"
 
-class PedidoDelete(LoginRequiredMixin, DeleteView):
+class PedidoDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Pedido
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('pedido-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Pedido excluído com sucesso!"
 
-class ItemPedidoDelete(LoginRequiredMixin, DeleteView):
+class ItemPedidoDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = ItemPedido
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('itempedido-list')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Exclusão feita com sucesso!')
-        return super().form_valid(form)
+    success_message = "Item do pedido excluído com sucesso!"
 
 
 #################### VIEWS LIST ####################################################################################################

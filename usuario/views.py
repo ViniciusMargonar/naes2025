@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.messages.views import SuccessMessageMixin
 
 def login_user(request):
     """View para login do usuário"""
@@ -30,16 +31,13 @@ def logout_user(request):
     messages.success(request, 'Logout realizado com sucesso!')
     return redirect('login')
 
-class UsuarioCreate(CreateView):
+class UsuarioCreate(SuccessMessageMixin, CreateView):
     """View para criar usuário"""
     model = User
     form_class = UserCreationForm
     template_name = 'usuario/form.html'
     success_url = reverse_lazy('login')
-    
-    def form_valid(self, form):
-        messages.success(self.request, 'Usuário cadastrado com sucesso!')
-        return super().form_valid(form)
+    success_message = "Usuário cadastrado com sucesso! Faça login para continuar."
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

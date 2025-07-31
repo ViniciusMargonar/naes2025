@@ -11679,3 +11679,117 @@ section .p-4 {
 #mainNav .nav-link.active {
     border-bottom: 0.25rem solid #50c878;
 }
+
+/* ==============================================
+   ESTILOS PARA MENSAGENS DE SISTEMA
+   ============================================== */
+
+/* Estilos gerais para mensagens */
+.alert {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animação de entrada */
+.alert.fade.show {
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Estilo para mensagens de sucesso */
+.alert-success {
+    background: linear-gradient(135deg, #67c29c, #50c878);
+    color: white;
+    border-left: 4px solid #4a9;
+}
+
+.alert-success .fas {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Estilo para mensagens de informação */
+.alert-info {
+    background: linear-gradient(135deg, #1cabc4, #17a2b8);
+    color: white;
+    border-left: 4px solid #0c7489;
+}
+
+.alert-info .fas {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Estilo para mensagens de aviso */
+.alert-warning {
+    background: linear-gradient(135deg, #e4c662, #ffc107);
+    color: #212529;
+    border-left: 4px solid #856404;
+}
+
+.alert-warning .fas {
+    color: rgba(33, 37, 41, 0.8);
+}
+
+/* Estilo para mensagens de erro */
+.alert-danger {
+    background: linear-gradient(135deg, #a16468, #dc3545);
+    color: white;
+    border-left: 4px solid #721c24;
+}
+
+.alert-danger .fas {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Estilo para mensagens secundárias/debug */
+.alert-secondary {
+    background: linear-gradient(135deg, #7464a1, #6c757d);
+    color: white;
+    border-left: 4px solid #495057;
+}
+
+.alert-secondary .fas {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Botão de fechar personalizado */
+.alert .btn-close {
+    background-size: 0.75em;
+    opacity: 0.8;
+    filter: brightness(0) invert(1);
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+/* Para mensagens de aviso, o botão deve ser escuro */
+.alert-warning .btn-close {
+    filter: brightness(0);
+}
+
+/* Efeito hover nas mensagens */
+.alert:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* Container das mensagens com espaçamento adequado */
+.alert + .alert {
+    margin-top: 0.5rem;
+}
