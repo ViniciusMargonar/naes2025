@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
-from django.contrib.auth.forms import UserCreationForm
+from django.views.generic.edit import CreateView
 from django.contrib.messages.views import SuccessMessageMixin
+from .forms import UsuarioCadastroForm
 
 def login_user(request):
     """View para login do usuário"""
@@ -31,15 +31,22 @@ def logout_user(request):
     messages.success(request, 'Logout realizado com sucesso!')
     return redirect('login')
 
-class UsuarioCreate(SuccessMessageMixin, CreateView):
-    """View para criar usuário"""
+class CadastroUsuarioView(CreateView):
+    """View para cadastro de usuários"""
     model = User
-    form_class = UserCreationForm
+    # Não tem o fields, pois ele é definido no forms.py
+    form_class = UsuarioCadastroForm
+    # Pode utilizar o seu form padrão
     template_name = 'usuario/form.html'
     success_url = reverse_lazy('login')
-    success_message = "Usuário cadastrado com sucesso! Faça login para continuar."
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['titulo'] = 'Cadastrar Usuário'
-        return context
+    extra_context = {'titulo': 'Registro de usuários'}
+
+    def form_valid(self, form):
+        # Faz o comportamento padrão do form_valid
+        url = super().form_valid(form)
+        # Busca ou cria um grupo com esse nome
+        grupo, criado = Group.objects.get_or_create(name='Estudante')
+        # Acessa o objeto criado e adiciona o usuário no grupo acima
+        self.object.groups.add(grupo)
+        # Retorna a URL de sucesso
+        return url
