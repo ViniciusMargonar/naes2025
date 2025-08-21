@@ -115,7 +115,7 @@
                                 </div>
                             {% endfor %}
                             <div class="text-center mt-3">
-                                <a href="{% url 'pedido-list' %}" class="btn btn-sm btn-outline-primary">Ver Todos os Pedidos</a>
+                                <a href="{% url 'pedido-list' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
                             </div>
                         {% else %}
                             <p class="text-muted text-center">Nenhum pedido cadastrado ainda.</p>
@@ -218,6 +218,70 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Valor Total Gasto por Fornecedor -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Valor Total por Fornecedor</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if fornecedores_valor %}
+                            {% for fornecedor_data in fornecedores_valor %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ fornecedor_data.fornecedor.nome }}</strong><br>
+                                        <small class="text-muted">{{ fornecedor_data.fornecedor.cidade.nome }}, {{ fornecedor_data.fornecedor.estado.sigla }}</small>
+                                    </div>
+                                    <span class="badge bg-success">R$ {{ fornecedor_data.valor_total|floatformat:2 }}</span>
+                                </div>
+                            {% endfor %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'fornecedor-list' %}" class="btn btn-sm btn-outline-success">Ver Todos</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Nenhum gasto registrado ainda.</p>
+                            <div class="text-center">
+                                <a href="{% url 'cadastrar-pedido' %}" class="btn btn-success">Fazer Pedido</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fornecedores com Pedidos Atrasados -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Fornecedores com Atrasos</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if fornecedores_atrasados %}
+                            {% for fornecedor_data in fornecedores_atrasados %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ fornecedor_data.fornecedor.nome }}</strong><br>
+                                        <small class="text-muted">{{ fornecedor_data.fornecedor.cidade.nome }}, {{ fornecedor_data.fornecedor.estado.sigla }}</small>
+                                    </div>
+                                    <span class="badge bg-danger">{{ fornecedor_data.pedidos_atrasados }} atrasado{{ fornecedor_data.pedidos_atrasados|pluralize:"s" }}</span>
+                                </div>
+                            {% endfor %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'pedido-list' %}" class="btn btn-sm btn-outline-danger">Ver Todos</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Nenhum pedido atrasado! 🎉</p>
+                            <div class="text-center">
+                                <a href="{% url 'pedido-list' %}" class="btn btn-success">Ver Todos</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terceira linha de cards (se necessário) -->
+        <div class="row g-4 mt-4">
         </div>
     </div>
 </section>

@@ -116,6 +116,57 @@ class PaginaInicial(TemplateView):
             ).filter(
                 num_pedidos__gt=0
             ).order_by('-num_pedidos')[:5]
+            
+            # === VALOR TOTAL GASTO POR FORNECEDOR ===
+            # Calcular valor total gasto por fornecedor
+            fornecedores_valor = []
+            for fornecedor in Fornecedor.objects.filter(criado_por=user):
+                valor_total_fornecedor = 0
+                pedidos_fornecedor = Pedido.objects.filter(
+                    criado_por=user, 
+                    fornecedor=fornecedor
+                )
+                for pedido in pedidos_fornecedor:
+                    itens_pedido = ItemPedido.objects.filter(
+                        criado_por=user,
+                        pedido=pedido
+                    )
+                    for item in itens_pedido:
+                        if item.quantidade and item.valor_unitario:
+                            valor_total_fornecedor += (item.quantidade * item.valor_unitario)
+                
+                if valor_total_fornecedor > 0:
+                    fornecedores_valor.append({
+                        'fornecedor': fornecedor,
+                        'valor_total': valor_total_fornecedor
+                    })
+            
+            # Ordenar por valor total (maior para menor)
+            fornecedores_valor.sort(key=lambda x: x['valor_total'], reverse=True)
+            context['fornecedores_valor'] = fornecedores_valor[:5]  # Top 5
+            
+            # === FORNECEDORES COM PEDIDOS MAIS ATRASADOS ===
+            # Fornecedores com pedidos atrasados (previsao_entrega já passou)
+            hoje = timezone.now().date()
+            fornecedores_atrasados = []
+            
+            for fornecedor in Fornecedor.objects.filter(criado_por=user):
+                pedidos_atrasados = Pedido.objects.filter(
+                    criado_por=user,
+                    fornecedor=fornecedor,
+                    previsao_entrega__lt=hoje,
+                    status__in=['pendente', 'em_andamento']  # Não incluir pedidos já finalizados
+                ).count()
+                
+                if pedidos_atrasados > 0:
+                    fornecedores_atrasados.append({
+                        'fornecedor': fornecedor,
+                        'pedidos_atrasados': pedidos_atrasados
+                    })
+            
+            # Ordenar por quantidade de pedidos atrasados (maior para menor)
+            fornecedores_atrasados.sort(key=lambda x: x['pedidos_atrasados'], reverse=True)
+            context['fornecedores_atrasados'] = fornecedores_atrasados[:5]  # Top 5
 
         return context
     
