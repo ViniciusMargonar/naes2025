@@ -10,27 +10,277 @@
         <div class="row h-100 align-items-center justify-content-center">
             <div class="col-lg-8 text-center">
                 <h1 class="hero-title text-white mb-4">AgroTrack</h1>
-                <h2 class="hero-subtitle text-white-75 mb-4">
-                    Simplifique a gestão do seu agronegócio
-                </h2>
-                <p class="hero-description text-white-50 mb-5">
-                    Controle total de pedidos, fornecedores e logística em uma plataforma intuitiva e moderna.
-                </p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary btn-lg me-3" href="/sobre/">
-                        <i class="fas fa-info-circle me-2"></i>Saiba Mais
-                    </a>
-                </div>
+                {% if request.user.is_authenticated %}
+                    <h2 class="hero-subtitle text-white-75 mb-4">
+                        Bem-vindo de volta, {{ user.first_name|default:user.username }}!
+                    </h2>
+                    <p class="hero-description text-white-50 mb-5">
+                        Gerencie seus pedidos, fornecedores e logística com facilidade.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary btn-lg me-3" href="{% url 'pedido-list' %}">
+                            <i class="fas fa-shopping-cart me-2"></i>Meus Pedidos
+                        </a>
+                        <a class="btn btn-primary btn-lg" href="{% url 'cadastrar-pedido' %}">
+                            <i class="fas fa-plus me-2"></i>Novo Pedido
+                        </a>
+                    </div>
+                {% else %}
+                    <h2 class="hero-subtitle text-white-75 mb-4">
+                        Simplifique a gestão do seu agronegócio
+                    </h2>
+                    <p class="hero-description text-white-50 mb-5">
+                        Controle total de pedidos, fornecedores e logística em uma plataforma intuitiva e moderna.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary btn-lg" href="/sobre/">
+                            <i class="fas fa-info-circle me-2"></i>Saiba Mais
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </header>
 
+{% if request.user.is_authenticated %}
+<!-- Dashboard Section para usuários logados -->
+<section class="dashboard-section py-5 bg-light">
+    <div class="container px-4 px-lg-5">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Seu Dashboard</h2>
+            <div class="section-divider"></div>
+        </div>
+        
+        <!-- Cards de Estatísticas Principais -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h4 class="dashboard-title">Pedidos</h4>
+                    <p class="dashboard-number">{{ total_pedidos|default:0 }}</p>
+                    <a href="{% url 'pedido-list' %}" class="btn btn-sm btn-outline-primary mt-2">Ver Todos</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-success">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h4 class="dashboard-title">Fornecedores</h4>
+                    <p class="dashboard-number">{{ total_fornecedores|default:0 }}</p>
+                    <a href="{% url 'fornecedor-list' %}" class="btn btn-sm btn-outline-success mt-2">Ver Todos</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-info">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h4 class="dashboard-title">Frota</h4>
+                    <p class="dashboard-number">{{ total_frota|default:0 }}</p>
+                    <a href="{% url 'frota-list' %}" class="btn btn-sm btn-outline-info mt-2">Ver Todos</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-warning">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <h4 class="dashboard-title">Itens</h4>
+                    <p class="dashboard-number">{{ total_itens|default:0 }}</p>
+                    <a href="{% url 'item-list' %}" class="btn btn-sm btn-outline-warning mt-2">Ver Todos</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status dos Pedidos -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-danger">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4 class="dashboard-title">Pendentes</h4>
+                    <p class="dashboard-number">{{ pedidos_pendentes|default:0 }}</p>
+                    <small class="text-muted">Aguardando processamento</small>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-warning">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <h4 class="dashboard-title">Em Andamento</h4>
+                    <p class="dashboard-number">{{ pedidos_em_andamento|default:0 }}</p>
+                    <small class="text-muted">Sendo processados</small>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card text-center h-100">
+                    <div class="dashboard-icon text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 class="dashboard-title">Entregues</h4>
+                    <p class="dashboard-number">{{ pedidos_entregues|default:0 }}</p>
+                    <small class="text-muted">Concluídos</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Seção de Últimos Registros e Informações Detalhadas -->
+<section class="recent-section py-5">
+    <div class="container px-4 px-lg-5">
+        <div class="row g-4">
+            <!-- Últimos Pedidos -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Últimos Pedidos</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if ultimos_pedidos %}
+                            {% for pedido in ultimos_pedidos %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ pedido.fornecedor.nome }}</strong><br>
+                                        <small class="text-muted">{{ pedido.descricao|truncatechars:30 }}</small><br>
+                                        <small class="text-info">Entrega: {{ pedido.previsao_entrega|date:"d/m/Y" }}</small>
+                                    </div>
+                                    <span class="badge bg-{% if pedido.status == 'pendente' %}danger{% elif pedido.status == 'em_andamento' %}warning{% else %}success{% endif %}">
+                                        {{ pedido.get_status_display }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'pedido-list' %}" class="btn btn-sm btn-outline-primary">Ver Todos os Pedidos</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Nenhum pedido cadastrado ainda.</p>
+                            <div class="text-center">
+                                <a href="{% url 'cadastrar-pedido' %}" class="btn btn-primary">Criar Primeiro Pedido</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pedidos Urgentes -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Pedidos Urgentes</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if pedidos_urgentes %}
+                            {% for pedido in pedidos_urgentes %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ pedido.fornecedor.nome }}</strong><br>
+                                        <small class="text-muted">{{ pedido.descricao|truncatechars:30 }}</small><br>
+                                        <small class="text-danger">
+                                            <i class="fas fa-clock me-1"></i>{{ pedido.previsao_entrega|date:"d/m/Y" }}
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'pedido-update' pedido.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center">Nenhum pedido urgente no momento.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segunda linha de cards informativos -->
+        <div class="row g-4 mt-4">
+            <!-- Top Fornecedores -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-building me-2"></i>Fornecedores Mais Utilizados</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if top_fornecedores %}
+                            {% for fornecedor in top_fornecedores %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ fornecedor.nome }}</strong><br>
+                                        <small class="text-muted">{{ fornecedor.cidade.nome }}, {{ fornecedor.estado.sigla }}</small>
+                                    </div>
+                                    <span class="badge bg-success">{{ fornecedor.num_pedidos }} pedido{{ fornecedor.num_pedidos|pluralize }}</span>
+                                </div>
+                            {% endfor %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'fornecedor-list' %}" class="btn btn-sm btn-outline-success">Ver Todos</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Nenhum fornecedor com pedidos ainda.</p>
+                            <div class="text-center">
+                                <a href="{% url 'cadastrar-fornecedor' %}" class="btn btn-success">Cadastrar Fornecedor</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Itens -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="fas fa-box me-2"></i>Itens Mais Pedidos</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if top_itens %}
+                            {% for item in top_itens %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ item.nome }}</strong><br>
+                                        <small class="text-muted">{{ item.categoria.nome }}</small>
+                                    </div>
+                                    <span class="badge bg-warning">{{ item.num_pedidos }} vez{{ item.num_pedidos|pluralize:"es" }}</span>
+                                </div>
+                            {% endfor %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'item-list' %}" class="btn btn-sm btn-outline-warning">Ver Todos</a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">Nenhum item pedido ainda.</p>
+                            <div class="text-center">
+                                <a href="{% url 'cadastrar-item' %}" class="btn btn-warning">Cadastrar Item</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Features Section -->
 <section class="features-section py-5" id="features">
     <div class="container px-4 px-lg-5">
         <div class="text-center mb-5">
-            <h2 class="section-title">Por que escolher o AgroTrack?</h2>
+            <h2 class="section-title">
+                {% if request.user.is_authenticated %}
+                    Recursos Disponíveis
+                {% else %}
+                    Por que escolher o AgroTrack?
+                {% endif %}
+            </h2>
             <div class="section-divider"></div>
         </div>
         
@@ -107,6 +357,7 @@
 </section>
 
 <!-- CTA Section -->
+{% if not request.user.is_authenticated %}
 <section class="cta-section py-5 bg-light">
     <div class="container px-4 px-lg-5">
         <div class="row justify-content-center">
@@ -116,7 +367,7 @@
                     Transforme a gestão do seu agronegócio hoje mesmo. É rápido, fácil e gratuito para começar.
                 </p>
                 <div class="cta-actions">
-                    <a class="btn btn-primary btn-lg me-3" href="/sobre/">
+                    <a class="btn btn-primary btn-lg" href="/sobre/">
                         <i class="fas fa-info-circle me-2"></i>Saber Mais
                     </a>
                 </div>
@@ -124,4 +375,5 @@
         </div>
     </div>
 </section>
+{% endif %}
 {% endblock %}

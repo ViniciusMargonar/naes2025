@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
     CategoriaItem, Item, ItemPedido, Pedido
@@ -17,6 +18,16 @@ class SuccessDeleteMixin:
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
+
+
+class OwnerRequiredMixin:
+    """Mixin que garante que apenas o criador do objeto pode editá-lo ou excluí-lo"""
+    
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if hasattr(obj, 'criado_por') and obj.criado_por != self.request.user:
+            raise PermissionDenied("Você não tem permissão para editar/excluir este registro.")
+        return obj
 
 
 #################### VIEWS CREATE ####################################################################################################
@@ -134,31 +145,25 @@ class CidadeUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     extra_context = {'titulo': 'Atualizar Cidade'}
     success_message = "Cidade atualizada com sucesso!"
 
-class FornecedorUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class FornecedorUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Fornecedor
     success_url = reverse_lazy('fornecedor-list')
     fields = ['nome', 'cnpj', 'telefone', 'email', 'cidade']
     extra_context = {'titulo': 'Atualizar Fornecedor'}
     success_message = "Fornecedor atualizado com sucesso!"
-    
-    def get_object(self, queryset=None):
-        return get_object_or_404(Fornecedor, pk=self.kwargs['pk'])
 
 
-class FrotaUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class FrotaUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Frota
     success_url = reverse_lazy('frota-list')
     fields = ['prefixo', 'descricao', 'ano']
     extra_context = {'titulo': 'Atualizar Frota'}
     success_message = "Frota atualizada com sucesso!"
-    
-    def get_object(self, queryset=None):
-        return get_object_or_404(Frota, pk=self.kwargs['pk'])
 
 
-class CategoriaItemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class CategoriaItemUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = CategoriaItem
     success_url = reverse_lazy('categoriaitem-list')
@@ -166,11 +171,8 @@ class CategoriaItemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     extra_context = {'titulo': 'Atualizar Categoria de Item'}
     success_message = "Categoria atualizada com sucesso!"
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(CategoriaItem, pk=self.kwargs['pk'])
 
-
-class ItemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class ItemUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Item
     success_url = reverse_lazy('item-list')
@@ -178,11 +180,8 @@ class ItemUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     extra_context = {'titulo': 'Atualizar Item'}
     success_message = "Item atualizado com sucesso!"
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Item, pk=self.kwargs['pk'])
 
-
-class PedidoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = Pedido
     success_url = reverse_lazy('pedido-list')
@@ -190,20 +189,14 @@ class PedidoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     extra_context = {'titulo': 'Atualizar Pedido'}
     success_message = "Pedido atualizado com sucesso!"
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Pedido, pk=self.kwargs['pk'])
 
-
-class ItemPedidoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class ItemPedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
     model = ItemPedido
     success_url = reverse_lazy('itempedido-list')
     fields = ['item', 'frota', 'pedido', 'status', 'quantidade', 'valor_unitario']
     extra_context = {'titulo': 'Atualizar Item do Pedido'}
     success_message = "Item do pedido atualizado com sucesso!"
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(ItemPedido, pk=self.kwargs['pk'])
 
 
 #################### VIEWS DELETE ####################################################################################################
@@ -220,37 +213,37 @@ class CidadeDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     success_url = reverse_lazy('cidade-list')
     success_message = "Cidade excluída com sucesso!"
 
-class FornecedorDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
+class FornecedorDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Fornecedor
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('fornecedor-list')
     success_message = "Fornecedor excluído com sucesso!"
 
-class FrotaDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
+class FrotaDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Frota
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('frota-list')
     success_message = "Frota excluída com sucesso!"
 
-class CategoriaItemDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
+class CategoriaItemDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = CategoriaItem
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('categoriaitem-list')
     success_message = "Categoria excluída com sucesso!"
 
-class ItemDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
+class ItemDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Item
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('item-list')
     success_message = "Item excluído com sucesso!"
 
-class PedidoDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
+class PedidoDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Pedido
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('pedido-list')
     success_message = "Pedido excluído com sucesso!"
 
-class ItemPedidoDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
+class ItemPedidoDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = ItemPedido
     template_name = 'cadastros/confirm_delete.html'
     success_url = reverse_lazy('itempedido-list')

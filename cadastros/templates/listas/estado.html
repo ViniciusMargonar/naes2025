@@ -7,66 +7,92 @@
         <div class="mb-5">
             <!-- Cabeçalho -->
             <div class="mb-4">
-                <div class="d-flex align-items-center">
-                    <h1 class="text-dark fw-light mb-2 me-3">Estados</h1>
-                    <a class="btn-add-round" href="{% url 'cadastrar-estado' %}" title="Cadastrar Novo Estado">
-                        <i class="fas fa-plus"></i>
-                    </a>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <h1 class="text-dark fw-light mb-2 me-3">Estados</h1>
+                        {% if request.user.is_authenticated %}
+                            <a class="btn-add-round" href="{% url 'cadastrar-estado' %}" title="Cadastrar Novo Estado">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% if request.user.is_authenticated %}
+                        <div class="text-muted">
+                            <i class="fas fa-user me-2"></i>Olá, {{ user.first_name|default:user.username }}!
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="border-bottom border-2 border-primary" style="width: 80px;"></div>
             </div>
 
-            <!-- Tabela Modernizada -->
-            <div class="table-container">
-                <table class="table table-modern">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Sigla</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for estado in object_list %}
-                        <tr>
-                            <td class="fw-bold text-primary">#{{ estado.id }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-map text-primary me-2"></i>
-                                    <strong>{{ estado.nome }}</strong>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">{{ estado.sigla }}</span>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <a href="{% url 'estado-update' estado.id %}" 
-                                       class="btn btn-outline-primary btn-sm" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="{% url 'estado-deletar' estado.id %}" 
-                                       class="btn btn-outline-danger btn-sm" title="Excluir">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4">
-                                <div class="empty-state">
-                                    <i class="fas fa-map fa-3x text-muted mb-3"></i>
-                                    <h5 class="text-muted">Nenhum estado cadastrado</h5>
-                                    <p class="text-muted mb-0">Clique no botão + para adicionar o primeiro estado.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {% if request.user.is_authenticated %}
+                <!-- Tabela Modernizada -->
+                <div class="table-container">
+                    <table class="table table-modern">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Sigla</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for estado in object_list %}
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ estado.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-map text-primary me-2"></i>
+                                        <strong>{{ estado.nome }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ estado.sigla }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'estado-update' estado.id %}" 
+                                           class="btn btn-outline-primary btn-sm" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'estado-deletar' estado.id %}" 
+                                           class="btn btn-outline-danger btn-sm" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="empty-state">
+                                        <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">Nenhum estado cadastrado</h5>
+                                        <p class="text-muted mb-0">Clique no botão + para adicionar o primeiro estado.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <!-- Mensagem para usuários não autenticados -->
+                <div class="text-center py-5">
+                    <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+                    <h3 class="text-muted mb-3">Acesso Restrito</h3>
+                    <p class="text-muted mb-4">Você precisa estar logado para visualizar os estados cadastrados.</p>
+                    <div>
+                        <a href="{% url 'login' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Fazer Login
+                        </a>
+                        <a href="{% url 'cadastrar-usuario' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus me-2"></i>Cadastrar-se
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </section>

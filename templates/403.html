@@ -1,0 +1,78 @@
+{% extends "paginasweb/modelo.html" %}
+{% load static %}
+
+{% block titulo %}Acesso Negado - AgroTrack{% endblock %}
+
+{% block conteudo %}
+<section class="py-5 mt-5">
+    <div class="container px-4 px-lg-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="access-denied-card p-5">
+                    <div class="access-denied-icon mb-4">
+                        <i class="fas fa-lock fa-5x text-danger"></i>
+                    </div>
+                    
+                    <h1 class="display-4 text-danger mb-4">403</h1>
+                    <h2 class="mb-4">Acesso Negado</h2>
+                    
+                    <p class="lead mb-4 text-muted">
+                        Você não tem permissão para editar ou excluir este registro. 
+                        Apenas o usuário que cadastrou pode realizar essas ações.
+                    </p>
+                    
+                    <div class="alert alert-info d-inline-block mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lembrete:</strong> Você pode visualizar todos os registros, mas só pode alterar os seus próprios.
+                    </div>
+                    
+                    <div class="access-denied-actions">
+                        <a href="javascript:history.back()" class="btn btn-secondary btn-lg me-3">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                        <a href="/" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Página Inicial
+                        </a>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <p class="text-muted small">
+                            Se você acredita que isso é um erro, entre em contato com o administrador.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.access-denied-card {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e9ecef;
+}
+
+.access-denied-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.access-denied-actions .btn {
+    margin: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .access-denied-actions .btn {
+        display: block;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
