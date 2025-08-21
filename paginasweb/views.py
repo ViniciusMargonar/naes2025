@@ -136,9 +136,22 @@ class PaginaInicial(TemplateView):
                             valor_total_fornecedor += (item.quantidade * item.valor_unitario)
                 
                 if valor_total_fornecedor > 0:
+                    # Formatar valor para padrão brasileiro
+                    valor_formatado = "{:.2f}".format(valor_total_fornecedor)
+                    parts = valor_formatado.split('.')
+                    integer_part = parts[0]
+                    decimal_part = parts[1]
+                    
+                    # Adicionar pontos como separadores de milhares
+                    integer_reversed = integer_part[::-1]
+                    chunks = [integer_reversed[i:i+3] for i in range(0, len(integer_reversed), 3)]
+                    integer_formatted = '.'.join(chunks)[::-1]
+                    valor_br = f"{integer_formatted},{decimal_part}"
+                    
                     fornecedores_valor.append({
                         'fornecedor': fornecedor,
-                        'valor_total': valor_total_fornecedor
+                        'valor_total': valor_total_fornecedor,
+                        'valor_formatado': valor_br
                     })
             
             # Ordenar por valor total (maior para menor)

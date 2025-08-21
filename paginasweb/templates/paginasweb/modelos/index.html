@@ -1,5 +1,6 @@
 {% extends 'paginasweb/modelo.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block titulo %}AgroTrack - Sistema de Gestão de Pedidos{% endblock %}
 
@@ -48,7 +49,7 @@
 <section class="dashboard-section py-5 bg-light">
     <div class="container px-4 px-lg-5">
         <div class="text-center mb-5">
-            <h2 class="section-title">Seu Dashboard</h2>
+            <h2 class="section-title">Painel de Controle</h2>
             <div class="section-divider"></div>
         </div>
         
@@ -233,7 +234,7 @@
                                         <strong>{{ fornecedor_data.fornecedor.nome }}</strong><br>
                                         <small class="text-muted">{{ fornecedor_data.fornecedor.cidade.nome }}, {{ fornecedor_data.fornecedor.estado.sigla }}</small>
                                     </div>
-                                    <span class="badge bg-success">R$ {{ fornecedor_data.valor_total|floatformat:2 }}</span>
+                                    <span class="badge bg-success">R$ {{ fornecedor_data.valor_formatado }}</span>
                                 </div>
                             {% endfor %}
                             <div class="text-center mt-3">
