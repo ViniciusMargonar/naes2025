@@ -12,7 +12,6 @@ from .models import (
 
 
 class SuccessDeleteMixin:
-    """Mixin para adicionar mensagem de sucesso em DeleteView"""
     success_message = "Registro excluído com sucesso!"
     
     def delete(self, request, *args, **kwargs):
@@ -21,8 +20,6 @@ class SuccessDeleteMixin:
 
 
 class OwnerRequiredMixin:
-    """Mixin que garante que apenas o criador do objeto pode editá-lo ou excluí-lo"""
-    
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if hasattr(obj, 'criado_por') and obj.criado_por != self.request.user:

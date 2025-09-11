@@ -44,12 +44,14 @@ INSTALLED_APPS = [
     "usuario.apps.UsuarioConfig",
     'crispy_forms',
     'crispy_bootstrap5',
+    "debug_toolbar",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',  # Debug Tool Bar - deve ser o primeiro
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -159,3 +161,9 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
+
+#Configuração Django Debug Tool Bar
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
