@@ -66,12 +66,12 @@ class PaginaInicial(TemplateView):
             ).select_related('categoria').order_by('-id')[:5]
             
             # === CONSULTAS AGREGADAS ===
-            # Valor total dos pedidos do usuário
-            itens_pedido = ItemPedido.objects.filter(criado_por=user)
-            valor_total = 0
-            for item in itens_pedido:
-                valor_total += (item.quantidade * item.valor_unitario) if item.quantidade and item.valor_unitario else 0
-            context['valor_total_pedidos'] = valor_total
+            # ✅ OTIMIZAÇÃO: Valor total dos pedidos usando agregação SQL
+            context['valor_total_pedidos'] = ItemPedido.objects.filter(
+                criado_por=user
+            ).aggregate(
+                total=Sum('quantidade') * Sum('valor_unitario')
+            ).get('total', 0) or 0
             
             # Quantidade total de itens pedidos
             context['quantidade_total_itens'] = ItemPedido.objects.filter(
@@ -87,7 +87,7 @@ class PaginaInicial(TemplateView):
                 criado_por=user,
                 previsao_entrega__lte=data_limite,
                 status__in=['pendente', 'em_andamento']
-            ).order_by('previsao_entrega')[:5]
+            ).select_related('fornecedor').order_by('previsao_entrega')[:5]
             
             # === ESTATÍSTICAS MENSAIS ===
             # Pedidos criados este mês
@@ -101,7 +101,7 @@ class PaginaInicial(TemplateView):
             # Top 5 fornecedores com mais pedidos
             context['top_fornecedores'] = Fornecedor.objects.filter(
                 criado_por=user
-            ).annotate(
+            ).select_related('cidade', 'estado').annotate(
                 num_pedidos=Count('pedido')
             ).filter(
                 num_pedidos__gt=0
@@ -111,75 +111,68 @@ class PaginaInicial(TemplateView):
             # Top 5 itens mais pedidos
             context['top_itens'] = Item.objects.filter(
                 criado_por=user
-            ).annotate(
+            ).select_related('categoria').annotate(
                 num_pedidos=Count('itempedido')
             ).filter(
                 num_pedidos__gt=0
             ).order_by('-num_pedidos')[:5]
             
             # === VALOR TOTAL GASTO POR FORNECEDOR ===
-            # Calcular valor total gasto por fornecedor
-            fornecedores_valor = []
-            for fornecedor in Fornecedor.objects.filter(criado_por=user):
-                valor_total_fornecedor = 0
-                pedidos_fornecedor = Pedido.objects.filter(
-                    criado_por=user, 
-                    fornecedor=fornecedor
-                )
-                for pedido in pedidos_fornecedor:
-                    itens_pedido = ItemPedido.objects.filter(
-                        criado_por=user,
-                        pedido=pedido
-                    )
-                    for item in itens_pedido:
-                        if item.quantidade and item.valor_unitario:
-                            valor_total_fornecedor += (item.quantidade * item.valor_unitario)
-                
-                if valor_total_fornecedor > 0:
-                    # Formatar valor para padrão brasileiro
-                    valor_formatado = "{:.2f}".format(valor_total_fornecedor)
-                    parts = valor_formatado.split('.')
-                    integer_part = parts[0]
-                    decimal_part = parts[1]
-                    
-                    # Adicionar pontos como separadores de milhares
-                    integer_reversed = integer_part[::-1]
-                    chunks = [integer_reversed[i:i+3] for i in range(0, len(integer_reversed), 3)]
-                    integer_formatted = '.'.join(chunks)[::-1]
-                    valor_br = f"{integer_formatted},{decimal_part}"
-                    
-                    fornecedores_valor.append({
-                        'fornecedor': fornecedor,
-                        'valor_total': valor_total_fornecedor,
-                        'valor_formatado': valor_br
-                    })
+            # ✅ OTIMIZAÇÃO: Usar agregação SQL em vez de loops Python
+            from django.db.models import F
             
-            # Ordenar por valor total (maior para menor)
-            fornecedores_valor.sort(key=lambda x: x['valor_total'], reverse=True)
-            context['fornecedores_valor'] = fornecedores_valor[:5]  # Top 5
+            fornecedores_valor = Fornecedor.objects.filter(
+                criado_por=user
+            ).select_related('cidade', 'estado').annotate(
+                valor_total=Sum(
+                    F('pedido__itempedido__quantidade') * F('pedido__itempedido__valor_unitario')
+                )
+            ).filter(
+                valor_total__isnull=False,
+                valor_total__gt=0
+            ).order_by('-valor_total')[:5]
+            
+            # Formatação brasileira dos valores
+            fornecedores_valor_formatados = []
+            for fornecedor in fornecedores_valor:
+                valor_total = fornecedor.valor_total or 0
+                # Formatar valor para padrão brasileiro
+                valor_formatado = "{:.2f}".format(valor_total)
+                parts = valor_formatado.split('.')
+                integer_part = parts[0]
+                decimal_part = parts[1]
+                
+                # Adicionar pontos como separadores de milhares
+                integer_reversed = integer_part[::-1]
+                chunks = [integer_reversed[i:i+3] for i in range(0, len(integer_reversed), 3)]
+                integer_formatted = '.'.join(chunks)[::-1]
+                valor_br = f"{integer_formatted},{decimal_part}"
+                
+                fornecedores_valor_formatados.append({
+                    'fornecedor': fornecedor,
+                    'valor_total': valor_total,
+                    'valor_formatado': valor_br
+                })
+            
+            context['fornecedores_valor'] = fornecedores_valor_formatados
             
             # === FORNECEDORES COM PEDIDOS MAIS ATRASADOS ===
-            # Fornecedores com pedidos atrasados (previsao_entrega já passou)
+            # ✅ OTIMIZAÇÃO: Usar agregação SQL em vez de loops
             hoje = timezone.now().date()
-            fornecedores_atrasados = []
-            
-            for fornecedor in Fornecedor.objects.filter(criado_por=user):
-                pedidos_atrasados = Pedido.objects.filter(
-                    criado_por=user,
-                    fornecedor=fornecedor,
-                    previsao_entrega__lt=hoje,
-                    status__in=['pendente', 'em_andamento']  # Não incluir pedidos já finalizados
-                ).count()
-                
-                if pedidos_atrasados > 0:
-                    fornecedores_atrasados.append({
-                        'fornecedor': fornecedor,
-                        'pedidos_atrasados': pedidos_atrasados
-                    })
-            
-            # Ordenar por quantidade de pedidos atrasados (maior para menor)
-            fornecedores_atrasados.sort(key=lambda x: x['pedidos_atrasados'], reverse=True)
-            context['fornecedores_atrasados'] = fornecedores_atrasados[:5]  # Top 5
+            context['fornecedores_atrasados'] = Fornecedor.objects.filter(
+                criado_por=user
+            ).select_related('cidade', 'estado').annotate(
+                pedidos_atrasados=Count(
+                    'pedido',
+                    filter=Q(
+                        pedido__previsao_entrega__lt=hoje,
+                        pedido__status__in=['pendente', 'em_andamento'],
+                        pedido__criado_por=user
+                    )
+                )
+            ).filter(
+                pedidos_atrasados__gt=0
+            ).order_by('-pedidos_atrasados')[:5]
 
         return context
     

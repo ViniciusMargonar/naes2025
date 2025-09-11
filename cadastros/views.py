@@ -107,8 +107,6 @@ class ItemPedidoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     
     def form_valid(self, form):
         form.instance.criado_por = self.request.user
-    def form_valid(self, form):
-        form.instance.criado_por = self.request.user
         return super().form_valid(form)
 
 
@@ -252,34 +250,110 @@ class ItemPedidoDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixi
 class EstadoList(LoginRequiredMixin, ListView):
     template_name = 'listas/estado.html'
     model = Estado
+    context_object_name = 'estados'
+    
+    def get_queryset(self):
+        # Estados são compartilhados, não precisam filtro por usuário
+        return Estado.objects.all().order_by('nome')
+
 
 class CidadeList(LoginRequiredMixin, ListView):
     template_name = 'listas/cidade.html'
     model = Cidade
+    context_object_name = 'cidades'
+    
+    def get_queryset(self):
+        # ✅ OTIMIZAÇÃO: select_related para evitar N+1 queries
+        return Cidade.objects.select_related('estado').order_by('nome')
+
 
 class FornecedorList(LoginRequiredMixin, ListView):
     template_name = 'listas/fornecedor.html'
     model = Fornecedor
+    context_object_name = 'fornecedores'
+    
+    def get_queryset(self):
+        # ✅ OTIMIZAÇÃO: select_related + filtro por usuário
+        return Fornecedor.objects.select_related(
+            'cidade', 
+            'estado', 
+            'criado_por'
+        ).filter(
+            criado_por=self.request.user
+        ).order_by('-id')  # Usar -id em vez de -criado_em
+
 
 class FrotaList(LoginRequiredMixin, ListView):
     template_name = 'listas/frota.html'
     model = Frota
+    context_object_name = 'frotas'
+    
+    def get_queryset(self):
+        # ✅ FILTRO por usuário + ordenação
+        return Frota.objects.select_related('criado_por').filter(
+            criado_por=self.request.user
+        ).order_by('-id')  # Usar -id em vez de -criado_em
+
 
 class CategoriaItemList(LoginRequiredMixin, ListView):
     template_name = 'listas/categoriaitem.html'
     model = CategoriaItem
+    context_object_name = 'categorias'
+    
+    def get_queryset(self):
+        # ✅ FILTRO por usuário + ordenação
+        return CategoriaItem.objects.select_related('criado_por').filter(
+            criado_por=self.request.user
+        ).order_by('nome')
+
 
 class ItemList(LoginRequiredMixin, ListView):
     template_name = 'listas/item.html'
     model = Item
+    context_object_name = 'itens'
+    
+    def get_queryset(self):
+        # ✅ OTIMIZAÇÃO: select_related para categoria + filtro por usuário
+        return Item.objects.select_related(
+            'categoria', 
+            'criado_por'
+        ).filter(
+            criado_por=self.request.user
+        ).order_by('nome')
+
 
 class PedidoList(LoginRequiredMixin, ListView):
     template_name = 'listas/pedido.html'
     model = Pedido
+    context_object_name = 'pedidos'
+    
+    def get_queryset(self):
+        # ✅ OTIMIZAÇÃO: select_related para fornecedor + filtro por usuário
+        return Pedido.objects.select_related(
+            'fornecedor', 
+            'criado_por'
+        ).filter(
+            criado_por=self.request.user
+        ).order_by('-data_pedido')  # Usar -data_pedido que existe no modelo
+
 
 class ItemPedidoList(LoginRequiredMixin, ListView):
     template_name = 'listas/itempedido.html'
     model = ItemPedido
+    context_object_name = 'itens_pedido'
+    
+    def get_queryset(self):
+        # ✅ OTIMIZAÇÃO: select_related múltiplo + filtro por usuário
+        return ItemPedido.objects.select_related(
+            'item',
+            'item__categoria',  # Categoria do item
+            'frota', 
+            'pedido',
+            'pedido__fornecedor',  # Fornecedor do pedido
+            'criado_por'
+        ).filter(
+            criado_por=self.request.user
+        ).order_by('-id')  # Usar -id em vez de -criado_em
 
 #EXEMPLOS AULA 240425
 
