@@ -51,4 +51,50 @@ window.addEventListener('DOMContentLoaded', event => {
         });
     });
 
+    // Máscara CNPJ
+    function applyCnpjMask(value) {
+        // Remove tudo que não é dígito
+        value = value.replace(/\D/g, '');
+        
+        // Aplica a máscara progressivamente
+        if (value.length <= 2) {
+            return value;
+        } else if (value.length <= 5) {
+            return value.replace(/(\d{2})(\d+)/, '$1.$2');
+        } else if (value.length <= 8) {
+            return value.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+        } else if (value.length <= 12) {
+            return value.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+        } else {
+            return value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
+        }
+    }
+
+    // Aplicar máscara CNPJ ao campo
+    const cnpjField = document.getElementById('id_cnpj');
+    if (cnpjField) {
+        cnpjField.addEventListener('input', function(e) {
+            const cursorPosition = e.target.selectionStart;
+            const oldValue = e.target.value;
+            const newValue = applyCnpjMask(e.target.value);
+            
+            // Atualiza o valor
+            e.target.value = newValue;
+            
+            // Calcula a nova posição do cursor
+            const diff = newValue.length - oldValue.length;
+            const newCursorPosition = cursorPosition + diff;
+            
+            // Reposiciona o cursor
+            e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+        });
+
+        // Também aplicar máscara ao colar
+        cnpjField.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                e.target.value = applyCnpjMask(e.target.value);
+            }, 10);
+        });
+    }
+
 });
