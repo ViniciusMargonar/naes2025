@@ -1,14 +1,16 @@
-from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.views.generic import CreateView, ListView, UpdateView, DeleteView, View
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
     CategoriaItem, Item, ItemPedido, Pedido
 )
+from .forms import PedidoComItensForm
 
 
 class SuccessDeleteMixin:
@@ -110,17 +112,38 @@ class ItemPedidoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-class PedidoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    template_name = 'cadastros/form.html'
-    model = Pedido
-    success_url = reverse_lazy('pedido-list')
-    fields = ['fornecedor', 'descricao', 'previsao_entrega', 'status']
-    extra_context = {'titulo': 'Cadastrar Pedido'}
-    success_message = "Pedido cadastrado com sucesso!"
+class PedidoCreate(LoginRequiredMixin, View):
+    template_name = 'cadastros/pedido_form.html'
     
-    def form_valid(self, form):
-        form.instance.criado_por = self.request.user
-        return super().form_valid(form)
+    def get(self, request):
+        form_wrapper = PedidoComItensForm(user=request.user)
+        
+        context = {
+            'titulo': 'Cadastrar Pedido',
+            'pedido_form': form_wrapper.pedido_form,
+            'item_formset': form_wrapper.item_formset,
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self, request):
+        form_wrapper = PedidoComItensForm(data=request.POST, user=request.user)
+        
+        if form_wrapper.is_valid():
+            try:
+                pedido = form_wrapper.save()
+                messages.success(request, f'Pedido #{pedido.id} criado com sucesso!')
+                return redirect('pedido-list')
+            except Exception as e:
+                messages.error(request, f'Erro ao criar pedido: {str(e)}')
+        else:
+            messages.error(request, 'Por favor, corrija os erros abaixo.')
+        
+        context = {
+            'titulo': 'Cadastrar Pedido',
+            'pedido_form': form_wrapper.pedido_form,
+            'item_formset': form_wrapper.item_formset,
+        }
+        return render(request, self.template_name, context)
 
 #################### VIEWS UPDATE ####################################################################################################
 
@@ -176,13 +199,87 @@ class ItemUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, Up
     success_message = "Item atualizado com sucesso!"
 
 
-class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
-    template_name = 'cadastros/form.html'
-    model = Pedido
-    success_url = reverse_lazy('pedido-list')
-    fields = ['fornecedor', 'descricao', 'previsao_entrega', 'status']
-    extra_context = {'titulo': 'Atualizar Pedido'}
-    success_message = "Pedido atualizado com sucesso!"
+class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, View):
+    template_name = 'cadastros/pedido_form.html'
+    
+    def get(self, request, pk):
+        try:
+            # ✅ OTIMIZAÇÃO CRÍTICA: select_related + prefetch_related para edição completa
+            # Esta query evita N+1 queries ao carregar:
+            # - pedido.fornecedor (select_related)
+            # - pedido.fornecedor.cidade e pedido.fornecedor.estado (select_related aninhado)
+            # - todos os itens existentes do pedido (prefetch_related)
+            # - item.categoria e frota de cada item (prefetch aninhado)
+            pedido = Pedido.objects.select_related(
+                'fornecedor',               # Para pedido.fornecedor.nome
+                'fornecedor__cidade',       # Para pedido.fornecedor.cidade
+                'fornecedor__estado',       # Para pedido.fornecedor.estado
+                'criado_por'                # Para validação de propriedade
+            ).prefetch_related(
+                'itempedido_set__item',             # Para item_pedido.item.nome nos formulários
+                'itempedido_set__item__categoria',  # Para item_pedido.item.categoria nos selects
+                'itempedido_set__frota'             # Para item_pedido.frota nos formulários
+            ).get(pk=pk, criado_por=request.user)
+        except Pedido.DoesNotExist:
+            messages.error(request, 'Pedido não encontrado.')
+            return redirect('pedido-list')
+        
+        form_wrapper = PedidoComItensForm(instance=pedido, user=request.user)
+        
+        context = {
+            'titulo': f'Editar Pedido #{pedido.id}',
+            'pedido_form': form_wrapper.pedido_form,
+            'item_formset': form_wrapper.item_formset,
+            'pedido': pedido,
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self, request, pk):
+        try:
+            # ✅ OTIMIZAÇÃO: Para POST, só precisamos do básico pois não exibimos dados complexos
+            pedido = Pedido.objects.select_related(
+                'fornecedor',
+                'criado_por'
+            ).get(pk=pk, criado_por=request.user)
+        except Pedido.DoesNotExist:
+            messages.error(request, 'Pedido não encontrado.')
+            return redirect('pedido-list')
+        
+        form_wrapper = PedidoComItensForm(data=request.POST, instance=pedido, user=request.user)
+        
+        if form_wrapper.is_valid():
+            try:
+                pedido_atualizado = form_wrapper.save()
+                messages.success(request, f'Pedido #{pedido_atualizado.id} atualizado com sucesso!')
+                return redirect('pedido-list')
+            except Exception as e:
+                messages.error(request, f'Erro ao atualizar pedido: {str(e)}')
+        else:
+            messages.error(request, 'Por favor, corrija os erros abaixo.')
+        
+        # ✅ OTIMIZAÇÃO: Se há erros, recarregar com dados otimizados para reexibir formulário
+        try:
+            pedido = Pedido.objects.select_related(
+                'fornecedor',
+                'fornecedor__cidade',
+                'fornecedor__estado',
+                'criado_por'
+            ).prefetch_related(
+                'itempedido_set__item',
+                'itempedido_set__item__categoria',
+                'itempedido_set__frota'
+            ).get(pk=pk, criado_por=request.user)
+        except Pedido.DoesNotExist:
+            messages.error(request, 'Pedido não encontrado.')
+            return redirect('pedido-list')
+        
+        context = {
+            'titulo': f'Editar Pedido #{pedido.id}',
+            'pedido_form': form_wrapper.pedido_form,
+            'item_formset': form_wrapper.item_formset,
+            'pedido': pedido,
+        }
+        return render(request, self.template_name, context)
 
 
 class ItemPedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -263,7 +360,7 @@ class CidadeList(LoginRequiredMixin, ListView):
     context_object_name = 'cidades'
     
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related para evitar N+1 queries
+        # ✅ OTIMIZAÇÃO: select_related para evitar N+1 queries com estado
         return Cidade.objects.select_related('estado').order_by('nome')
 
 
@@ -273,14 +370,15 @@ class FornecedorList(LoginRequiredMixin, ListView):
     context_object_name = 'fornecedores'
     
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related + filtro por usuário
+        # ✅ OTIMIZAÇÃO: select_related para cidade e estado + filtro por usuário
         return Fornecedor.objects.select_related(
-            'cidade', 
-            'estado', 
-            'criado_por'
+            'cidade',               # Para fornecedor.cidade.nome
+            'cidade__estado',       # Para fornecedor.cidade.estado (se usado)
+            'estado',               # Para fornecedor.estado (se usado diretamente)
+            'criado_por'            # Para filtragem por usuário
         ).filter(
             criado_por=self.request.user
-        ).order_by('-id')  # Usar -id em vez de -criado_em
+        ).order_by('-id')
 
 
 class FrotaList(LoginRequiredMixin, ListView):
@@ -328,13 +426,23 @@ class PedidoList(LoginRequiredMixin, ListView):
     context_object_name = 'pedidos'
     
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related para fornecedor + filtro por usuário
+        # ✅ OTIMIZAÇÃO MÁXIMA: Combina select_related + prefetch_related
+        # Esta é a query mais crítica pois evita N+1 queries em múltiplos níveis:
+        # - pedido.fornecedor.nome e pedido.fornecedor.cidade (select_related)
+        # - pedido.itempedido_set.count() e loop nos itens (prefetch_related)
+        # - item_pedido.item.nome, item_pedido.item.categoria.nome (prefetch aninhado)
+        # - item_pedido.frota.prefixo e item_pedido.frota.descricao (prefetch aninhado)
         return Pedido.objects.select_related(
-            'fornecedor', 
-            'criado_por'
+            'fornecedor',           # Para pedido.fornecedor.nome
+            'fornecedor__cidade',   # Para pedido.fornecedor.cidade
+            'criado_por'            # Para filtragem por usuário
+        ).prefetch_related(
+            'itempedido_set__item',             # Para item_pedido.item.nome
+            'itempedido_set__item__categoria',  # Para item_pedido.item.categoria.nome
+            'itempedido_set__frota'             # Para item_pedido.frota.prefixo e descricao
         ).filter(
             criado_por=self.request.user
-        ).order_by('-data_pedido')  # Usar -data_pedido que existe no modelo
+        ).order_by('-data_pedido')
 
 
 class ItemPedidoList(LoginRequiredMixin, ListView):
@@ -343,17 +451,21 @@ class ItemPedidoList(LoginRequiredMixin, ListView):
     context_object_name = 'itens_pedido'
     
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related múltiplo + filtro por usuário
+        # ✅ OTIMIZAÇÃO CRÍTICA: select_related + prefetch para relacionamentos aninhados
+        # Esta query evita múltiplas consultas ao banco ao acessar:
+        # - item_pedido.item.nome e item_pedido.item.categoria.nome
+        # - item_pedido.pedido.fornecedor.nome
+        # - item_pedido.frota.prefixo/descricao
         return ItemPedido.objects.select_related(
-            'item',
-            'item__categoria',  # Categoria do item
-            'frota', 
-            'pedido',
-            'pedido__fornecedor',  # Fornecedor do pedido
-            'criado_por'
+            'item',                     # Para item_pedido.item.nome
+            'item__categoria',          # Para item_pedido.item.categoria.nome
+            'frota',                    # Para item_pedido.frota (opcional)
+            'pedido',                   # Para item_pedido.pedido
+            'pedido__fornecedor',       # Para item_pedido.pedido.fornecedor
+            'criado_por'                # Para filtragem por usuário
         ).filter(
             criado_por=self.request.user
-        ).order_by('-id')  # Usar -id em vez de -criado_em
+        ).order_by('-id')
 
 #EXEMPLOS AULA 240425
 
