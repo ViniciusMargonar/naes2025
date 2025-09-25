@@ -127,26 +127,6 @@
     </div>
 </div>
 
-<!-- Indicador de Filtros Aplicados -->
-{% if filter.form.data %}
-    <div class="alert alert-info d-flex align-items-center justify-content-between mb-3">
-        <div>
-            <i class="fas fa-info-circle me-2"></i>
-            <strong>Filtros aplicados:</strong>
-            <span class="ms-2">
-                {% for field_name, value in filter.form.data.items %}
-                    {% if value %}
-                        <span class="badge bg-primary me-1">{{ field_name }}: {{ value }}</span>
-                    {% endif %}
-                {% endfor %}
-            </span>
-        </div>
-        <a href="?" class="btn btn-sm btn-outline-primary">
-            <i class="fas fa-times"></i>
-        </a>
-    </div>
-{% endif %}
-
 <style>
     .card-header {
         cursor: pointer;
@@ -181,24 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
         collapseElement.addEventListener('hidden.bs.collapse', function() {
             toggleButton.querySelector('i').classList.replace('fa-chevron-up', 'fa-chevron-down');
         });
-        
-        // Expandir automaticamente se há filtros aplicados
-        {% if filter.form.data %}
-            const collapse = new bootstrap.Collapse(collapseElement, {show: true});
-        {% endif %}
     }
-    
-    // Auto-submit ao alterar alguns campos específicos
-    const autoSubmitFields = ['#id_fornecedor', '#id_status'];
-    autoSubmitFields.forEach(selector => {
-        const field = document.querySelector(selector);
-        if (field) {
-            field.addEventListener('change', function() {
-                if (this.value) {
-                    document.getElementById('filtros-form').submit();
-                }
-            });
-        }
-    });
 });
 </script>
