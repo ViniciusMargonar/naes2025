@@ -29,12 +29,27 @@
                         <small class="text-muted d-block">
                             <i class="fas fa-user me-1"></i>Logado como: {{ user.first_name|default:user.username }}
                         </small>
-                        <small class="text-muted">
-                            <i class="fas fa-boxes me-1"></i>Total: {{ pedidos|length }} pedido{{ pedidos|length|pluralize }}
+                        <small class="text-muted d-block">
+                            <i class="fas fa-boxes me-1"></i>
+                            {% if total_filtrado != total_geral %}
+                                Mostrando: {{ total_filtrado }} de {{ total_geral }} pedidos
+                            {% else %}
+                                Total: {{ total_geral }} pedido{{ total_geral|pluralize }}
+                            {% endif %}
                         </small>
+                        {% if stats_status %}
+                            <small class="text-muted">
+                                <span class="badge bg-warning text-dark me-1">{{ stats_status.pendente }}</span>
+                                <span class="badge bg-info me-1">{{ stats_status.em_andamento }}</span>
+                                <span class="badge bg-success">{{ stats_status.finalizado }}</span>
+                            </small>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
+
+            <!-- Filtros Django-Filter -->
+            {% include 'listas/django-filter.html' %}
 
             <!-- Tabela de Pedidos -->
             {% if pedidos %}
@@ -238,18 +253,77 @@
                         <i class="fas fa-file-invoice fa-4x text-muted mb-4"></i>
                         <h3 class="text-muted mb-3">Nenhum pedido encontrado</h3>
                         <p class="text-muted mb-4">
-                            {% if request.user.is_authenticated %}
+                            {% if filter.form.data %}
+                                Nenhum pedido corresponde aos filtros aplicados. Tente ajustar os critérios de busca.
+                            {% elif request.user.is_authenticated %}
                                 Você ainda não criou nenhum pedido. Comece criando seu primeiro pedido!
                             {% else %}
                                 Faça login para ver seus pedidos.
                             {% endif %}
                         </p>
                         {% if request.user.is_authenticated %}
+                            {% if filter.form.data %}
+                                <a href="?" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-times me-2"></i>Limpar Filtros
+                                </a>
+                            {% endif %}
                             <a href="{% url 'cadastrar-pedido' %}" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Criar Primeiro Pedido
+                                <i class="fas fa-plus me-2"></i>Criar {% if not filter.form.data %}Primeiro {% endif %}Pedido
                             </a>
                         {% endif %}
                     </div>
+                </div>
+            {% endif %}
+            
+            <!-- Paginação -->
+            {% if is_paginated %}
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        ({{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }})
+                    </div>
+                    
+                    <nav aria-label="Paginação dos Pedidos">
+                        <ul class="pagination mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in filter.form.data.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" aria-label="Primeira">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in filter.form.data.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% for key, value in filter.form.data.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in filter.form.data.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" aria-label="Próxima">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in filter.form.data.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
                 </div>
             {% endif %}
         </div>

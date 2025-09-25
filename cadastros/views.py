@@ -6,11 +6,13 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
+from django_filters.views import FilterView
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
     CategoriaItem, Item, ItemPedido, Pedido
 )
 from .forms import PedidoComItensForm
+from .filters import PedidoFilter
 
 
 class SuccessDeleteMixin:
@@ -420,10 +422,12 @@ class ItemList(LoginRequiredMixin, ListView):
         ).order_by('nome')
 
 
-class PedidoList(LoginRequiredMixin, ListView):
+class PedidoList(LoginRequiredMixin, FilterView):
     template_name = 'listas/pedido.html'
     model = Pedido
     context_object_name = 'pedidos'
+    filterset_class = PedidoFilter
+    paginate_by = 20  # Paginação para melhorar performance
     
     def get_queryset(self):
         # ✅ OTIMIZAÇÃO MÁXIMA: Combina select_related + prefetch_related
@@ -443,6 +447,29 @@ class PedidoList(LoginRequiredMixin, ListView):
         ).filter(
             criado_por=self.request.user
         ).order_by('-data_pedido')
+    
+    def get_filterset_kwargs(self, filterset_class):
+        """Passa o request para o filterset para filtrar por usuário"""
+        kwargs = super().get_filterset_kwargs(filterset_class)
+        kwargs['request'] = self.request
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Adicionar estatísticas dos filtros aplicados
+        filtered_queryset = context['filter'].qs
+        context['total_filtrado'] = filtered_queryset.count()
+        context['total_geral'] = self.get_queryset().count()
+        
+        # Estatísticas por status (dos pedidos filtrados)
+        context['stats_status'] = {
+            'pendente': filtered_queryset.filter(status='pendente').count(),
+            'em_andamento': filtered_queryset.filter(status='em_andamento').count(),
+            'finalizado': filtered_queryset.filter(status='finalizado').count(),
+        }
+        
+        return context
 
 
 class ItemPedidoList(LoginRequiredMixin, ListView):

@@ -66,12 +66,15 @@ class PaginaInicial(TemplateView):
             ).select_related('categoria').order_by('-id')[:5]
             
             # === CONSULTAS AGREGADAS ===
-            # ✅ OTIMIZAÇÃO: Valor total dos pedidos usando agregação SQL
-            context['valor_total_pedidos'] = ItemPedido.objects.filter(
+            # ✅ OTIMIZAÇÃO CORRIGIDA: Valor total dos pedidos usando agregação SQL correta
+            from django.db.models import F
+            
+            valor_total_result = ItemPedido.objects.filter(
                 criado_por=user
             ).aggregate(
-                total=Sum('quantidade') * Sum('valor_unitario')
-            ).get('total', 0) or 0
+                total=Sum(F('quantidade') * F('valor_unitario'))
+            )
+            context['valor_total_pedidos'] = valor_total_result.get('total', 0) or 0
             
             # Quantidade total de itens pedidos
             context['quantidade_total_itens'] = ItemPedido.objects.filter(
@@ -118,9 +121,7 @@ class PaginaInicial(TemplateView):
             ).order_by('-num_pedidos')[:5]
             
             # === VALOR TOTAL GASTO POR FORNECEDOR ===
-            # ✅ OTIMIZAÇÃO: Usar agregação SQL em vez de loops Python
-            from django.db.models import F
-            
+            # ✅ OTIMIZAÇÃO MÁXIMA: Usar agregação SQL com select_related para relacionamentos
             fornecedores_valor = Fornecedor.objects.filter(
                 criado_por=user
             ).select_related('cidade', 'estado').annotate(
