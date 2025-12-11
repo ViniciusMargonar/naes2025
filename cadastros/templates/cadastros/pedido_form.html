@@ -330,21 +330,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para calcular totais
     function calculateTotals() {
         let totalGeral = 0;
-        
+
         document.querySelectorAll('.item-form-row:not([data-deleted="true"])').forEach(function(row) {
             const quantidade = row.querySelector('input[name*="quantidade"]');
             const valorUnitario = row.querySelector('input[name*="valor_unitario"]');
             const totalItem = row.querySelector('.total-item');
-            
+
             if (quantidade && valorUnitario && quantidade.value && valorUnitario.value) {
-                const total = parseFloat(quantidade.value) * parseFloat(valorUnitario.value);
+                // Usa getCurrencyValue() para obter valor numérico da máscara de moeda
+                const qtd = parseFloat(quantidade.value) || 0;
+                const valor = window.getCurrencyValue ? window.getCurrencyValue(valorUnitario) : parseFloat(valorUnitario.value.replace(',', '.')) || 0;
+                const total = qtd * valor;
+
                 totalItem.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
                 totalGeral += total;
             } else {
                 totalItem.textContent = 'R$ 0,00';
             }
         });
-        
+
         document.getElementById('total-geral').textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
     }
 
@@ -370,7 +374,30 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.querySelector('select[name*="item"]').required = true;
         newRow.querySelector('input[name*="quantidade"]').required = true;
         newRow.querySelector('input[name*="valor_unitario"]').required = true;
-        
+
+        // Aplicar máscara de moeda no campo valor_unitario do novo item
+        const valorField = newRow.querySelector('input[name*="valor_unitario"]');
+        if (valorField && window.IMask) {
+            valorField.type = 'text'; // Mudar de number para text
+            IMask(valorField, {
+                mask: 'R$ num',
+                blocks: {
+                    num: {
+                        mask: Number,
+                        thousandsSeparator: '.',
+                        radix: ',',
+                        scale: 2,
+                        min: 0,
+                        max: 999999999.99,
+                        padFractionalZeros: true,
+                        normalizeZeros: true,
+                        mapToRadix: ['.']
+                    }
+                }
+            });
+            valorField.classList.add('masked-currency');
+        }
+
         // Ocultar linha "sem itens"
         toggleNoItemsRow();
     }
