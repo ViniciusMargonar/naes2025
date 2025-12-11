@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
-    CategoriaItem, Item, Pedido, ItemPedido
+    CategoriaItem, Item, Pedido, ItemPedido, MovimentacaoPedido
 )
 
 @admin.register(Estado)
@@ -55,3 +55,18 @@ class ItemPedidoAdmin(admin.ModelAdmin):
     list_display = ('item', 'pedido', 'frota', 'status', 'quantidade', 'valor_unitario', 'criado_por')
     list_filter = ('status', 'pedido', 'item')
     search_fields = ('item__nome', 'pedido__id')
+
+
+@admin.register(MovimentacaoPedido)
+class MovimentacaoPedidoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'pedido', 'tipo', 'status_anterior', 'status_novo', 'data_movimentacao', 'usuario')
+    list_filter = ('tipo', 'data_movimentacao', 'usuario')
+    search_fields = ('pedido__id', 'observacao')
+    readonly_fields = ('pedido', 'tipo', 'status_anterior', 'status_novo', 'observacao', 'data_movimentacao', 'usuario')
+    date_hierarchy = 'data_movimentacao'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -4,7 +4,6 @@ from .models import Pedido, Fornecedor, Item, Frota
 
 
 class PedidoFilter(django_filters.FilterSet):
-    # Filtro por nome do fornecedor (busca de texto)
     fornecedor__nome = django_filters.CharFilter(
         field_name='fornecedor__nome',
         lookup_expr='icontains',
@@ -14,24 +13,21 @@ class PedidoFilter(django_filters.FilterSet):
             'placeholder': 'Digite o nome do fornecedor...'
         })
     )
-    
-    # Mantém filtro por seleção de fornecedor também
+
     fornecedor = django_filters.ModelChoiceFilter(
         queryset=Fornecedor.objects.all(),
         label='Fornecedor (seleção)',
         empty_label='Selecione um fornecedor',
         widget=forms.Select(attrs={'class': 'form-select'})
     )
-    
-    # Filtro por status do pedido
+
     status = django_filters.ChoiceFilter(
         choices=Pedido.STATUS_CHOICES,
         label='Status do Pedido',
         empty_label='Todos os status',
         widget=forms.Select(attrs={'class': 'form-select'})
     )
-    
-    # Filtros de data do pedido (intervalo)
+
     data_pedido__gte = django_filters.DateFilter(
         field_name='data_pedido',
         lookup_expr='gte',
@@ -41,7 +37,7 @@ class PedidoFilter(django_filters.FilterSet):
             'class': 'form-control'
         })
     )
-    
+
     data_pedido__lte = django_filters.DateFilter(
         field_name='data_pedido',
         lookup_expr='lte',
@@ -51,8 +47,7 @@ class PedidoFilter(django_filters.FilterSet):
             'class': 'form-control'
         })
     )
-    
-    # Filtro por previsão de entrega
+
     previsao_entrega__gte = django_filters.DateFilter(
         field_name='previsao_entrega',
         lookup_expr='gte',
@@ -62,7 +57,7 @@ class PedidoFilter(django_filters.FilterSet):
             'class': 'form-control'
         })
     )
-    
+
     previsao_entrega__lte = django_filters.DateFilter(
         field_name='previsao_entrega',
         lookup_expr='lte',
@@ -72,8 +67,7 @@ class PedidoFilter(django_filters.FilterSet):
             'class': 'form-control'
         })
     )
-    
-    # Filtro por prefixo da frota (busca de texto)
+
     itempedido__frota__prefixo = django_filters.CharFilter(
         field_name='itempedido__frota__prefixo',
         lookup_expr='icontains',
@@ -87,14 +81,12 @@ class PedidoFilter(django_filters.FilterSet):
 
     class Meta:
         model = Pedido
-        fields = []  # Usar apenas os campos definidos explicitamente acima
-        
+        fields = []
+
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         super().__init__(data, queryset, request=request, prefix=prefix)
-        
-        # ✅ OTIMIZAÇÃO: Filtrar fornecedores por usuário com select_related
+
         if request and hasattr(request, 'user') and request.user.is_authenticated:
-            # Otimizar fornecedores com cidade e estado
             self.filters['fornecedor'].queryset = Fornecedor.objects.select_related(
                 'cidade', 'estado'
             ).filter(

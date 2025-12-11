@@ -147,3 +147,33 @@ class ItemPedido(models.Model):
         verbose_name = "Item de Pedido"
         verbose_name_plural = "Itens de Pedido"
         ordering = ['pedido', 'item']
+
+
+class MovimentacaoPedido(models.Model):
+    """
+    Registra historico de movimentacoes e mudancas de status nos pedidos
+    para fins de auditoria e rastreabilidade.
+    """
+    TIPO_MOVIMENTACAO_CHOICES = [
+        ('criacao', 'Criação'),
+        ('alteracao_status', 'Alteração de Status'),
+        ('alteracao_dados', 'Alteração de Dados'),
+        ('adicao_item', 'Adição de Item'),
+        ('remocao_item', 'Remoção de Item'),
+    ]
+
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='movimentacoes')
+    tipo = models.CharField(max_length=20, choices=TIPO_MOVIMENTACAO_CHOICES)
+    status_anterior = models.CharField(max_length=20, blank=True, null=True)
+    status_novo = models.CharField(max_length=20, blank=True, null=True)
+    observacao = models.TextField(blank=True)
+    data_movimentacao = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Movimentação #{self.id} - Pedido #{self.pedido.id} - {self.get_tipo_display()}"
+
+    class Meta:
+        verbose_name = "Movimentação de Pedido"
+        verbose_name_plural = "Movimentações de Pedidos"
+        ordering = ['-data_movimentacao']

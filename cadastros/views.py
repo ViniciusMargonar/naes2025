@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django_filters.views import FilterView
 from .models import (
     Estado, Cidade, Fornecedor, Frota,
-    CategoriaItem, Item, ItemPedido, Pedido
+    CategoriaItem, Item, ItemPedido, Pedido, MovimentacaoPedido
 )
 from .forms import PedidoComItensForm
 from .filters import PedidoFilter
@@ -30,8 +30,6 @@ class OwnerRequiredMixin:
             raise PermissionDenied("Você não tem permissão para editar/excluir este registro.")
         return obj
 
-
-#################### VIEWS CREATE ####################################################################################################
 
 class EstadoCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'cadastros/form.html'
@@ -129,25 +127,32 @@ class PedidoCreate(LoginRequiredMixin, View):
     
     def post(self, request):
         form_wrapper = PedidoComItensForm(data=request.POST, user=request.user)
-        
+
         if form_wrapper.is_valid():
             try:
                 pedido = form_wrapper.save()
+
+                MovimentacaoPedido.objects.create(
+                    pedido=pedido,
+                    tipo='criacao',
+                    status_novo=pedido.status,
+                    observacao=f'Pedido criado com {pedido.itempedido_set.count()} itens. Valor total: R$ {pedido.valor_total}',
+                    usuario=request.user
+                )
+
                 messages.success(request, f'Pedido #{pedido.id} criado com sucesso!')
                 return redirect('pedido-list')
             except Exception as e:
                 messages.error(request, f'Erro ao criar pedido: {str(e)}')
         else:
             messages.error(request, 'Por favor, corrija os erros abaixo.')
-        
+
         context = {
             'titulo': 'Cadastrar Pedido',
             'pedido_form': form_wrapper.pedido_form,
             'item_formset': form_wrapper.item_formset,
         }
         return render(request, self.template_name, context)
-
-#################### VIEWS UPDATE ####################################################################################################
 
 class EstadoUpdate(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'cadastros/form.html'
@@ -206,21 +211,15 @@ class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, View):
     
     def get(self, request, pk):
         try:
-            # ✅ OTIMIZAÇÃO CRÍTICA: select_related + prefetch_related para edição completa
-            # Esta query evita N+1 queries ao carregar:
-            # - pedido.fornecedor (select_related)
-            # - pedido.fornecedor.cidade e pedido.fornecedor.estado (select_related aninhado)
-            # - todos os itens existentes do pedido (prefetch_related)
-            # - item.categoria e frota de cada item (prefetch aninhado)
             pedido = Pedido.objects.select_related(
-                'fornecedor',               # Para pedido.fornecedor.nome
-                'fornecedor__cidade',       # Para pedido.fornecedor.cidade
-                'fornecedor__estado',       # Para pedido.fornecedor.estado
-                'criado_por'                # Para validação de propriedade
+                'fornecedor',
+                'fornecedor__cidade',
+                'fornecedor__estado',
+                'criado_por'
             ).prefetch_related(
-                'itempedido_set__item',             # Para item_pedido.item.nome nos formulários
-                'itempedido_set__item__categoria',  # Para item_pedido.item.categoria nos selects
-                'itempedido_set__frota'             # Para item_pedido.frota nos formulários
+                'itempedido_set__item',
+                'itempedido_set__item__categoria',
+                'itempedido_set__frota'
             ).get(pk=pk, criado_por=request.user)
         except Pedido.DoesNotExist:
             messages.error(request, 'Pedido não encontrado.')
@@ -238,7 +237,6 @@ class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, View):
     
     def post(self, request, pk):
         try:
-            # ✅ OTIMIZAÇÃO: Para POST, só precisamos do básico pois não exibimos dados complexos
             pedido = Pedido.objects.select_related(
                 'fornecedor',
                 'criado_por'
@@ -246,12 +244,34 @@ class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, View):
         except Pedido.DoesNotExist:
             messages.error(request, 'Pedido não encontrado.')
             return redirect('pedido-list')
-        
+
+        status_anterior = pedido.status
+
         form_wrapper = PedidoComItensForm(data=request.POST, instance=pedido, user=request.user)
-        
+
         if form_wrapper.is_valid():
             try:
                 pedido_atualizado = form_wrapper.save()
+
+                if status_anterior != pedido_atualizado.status:
+                    MovimentacaoPedido.objects.create(
+                        pedido=pedido_atualizado,
+                        tipo='alteracao_status',
+                        status_anterior=status_anterior,
+                        status_novo=pedido_atualizado.status,
+                        observacao=f'Status alterado de "{pedido_atualizado.get_status_display()}" para "{dict(Pedido.STATUS_CHOICES).get(pedido_atualizado.status)}"',
+                        usuario=request.user
+                    )
+                else:
+                    MovimentacaoPedido.objects.create(
+                        pedido=pedido_atualizado,
+                        tipo='alteracao_dados',
+                        status_anterior=status_anterior,
+                        status_novo=pedido_atualizado.status,
+                        observacao=f'Dados do pedido atualizados. Valor total: R$ {pedido_atualizado.valor_total}',
+                        usuario=request.user
+                    )
+
                 messages.success(request, f'Pedido #{pedido_atualizado.id} atualizado com sucesso!')
                 return redirect('pedido-list')
             except Exception as e:
@@ -259,7 +279,6 @@ class PedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, View):
         else:
             messages.error(request, 'Por favor, corrija os erros abaixo.')
         
-        # ✅ OTIMIZAÇÃO: Se há erros, recarregar com dados otimizados para reexibir formulário
         try:
             pedido = Pedido.objects.select_related(
                 'fornecedor',
@@ -292,8 +311,6 @@ class ItemPedidoUpdate(LoginRequiredMixin, OwnerRequiredMixin, SuccessMessageMix
     extra_context = {'titulo': 'Atualizar Item do Pedido'}
     success_message = "Item do pedido atualizado com sucesso!"
 
-
-#################### VIEWS DELETE ####################################################################################################
 
 class EstadoDelete(LoginRequiredMixin, SuccessDeleteMixin, DeleteView):
     model = Estado
@@ -344,15 +361,13 @@ class ItemPedidoDelete(LoginRequiredMixin, OwnerRequiredMixin, SuccessDeleteMixi
     success_message = "Item do pedido excluído com sucesso!"
 
 
-#################### VIEWS LIST ####################################################################################################
-
 class EstadoList(LoginRequiredMixin, ListView):
     template_name = 'listas/estado.html'
     model = Estado
     context_object_name = 'estados'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # Estados são compartilhados, não precisam filtro por usuário
         return Estado.objects.all().order_by('nome')
 
 
@@ -360,9 +375,9 @@ class CidadeList(LoginRequiredMixin, ListView):
     template_name = 'listas/cidade.html'
     model = Cidade
     context_object_name = 'cidades'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related para evitar N+1 queries com estado
         return Cidade.objects.select_related('estado').order_by('nome')
 
 
@@ -370,14 +385,14 @@ class FornecedorList(LoginRequiredMixin, ListView):
     template_name = 'listas/fornecedor.html'
     model = Fornecedor
     context_object_name = 'fornecedores'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related para cidade e estado + filtro por usuário
         return Fornecedor.objects.select_related(
-            'cidade',               # Para fornecedor.cidade.nome
-            'cidade__estado',       # Para fornecedor.cidade.estado (se usado)
-            'estado',               # Para fornecedor.estado (se usado diretamente)
-            'criado_por'            # Para filtragem por usuário
+            'cidade',
+            'cidade__estado',
+            'estado',
+            'criado_por'
         ).filter(
             criado_por=self.request.user
         ).order_by('-id')
@@ -387,21 +402,21 @@ class FrotaList(LoginRequiredMixin, ListView):
     template_name = 'listas/frota.html'
     model = Frota
     context_object_name = 'frotas'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ FILTRO por usuário + ordenação
         return Frota.objects.select_related('criado_por').filter(
             criado_por=self.request.user
-        ).order_by('-id')  # Usar -id em vez de -criado_em
+        ).order_by('-id')
 
 
 class CategoriaItemList(LoginRequiredMixin, ListView):
     template_name = 'listas/categoriaitem.html'
     model = CategoriaItem
     context_object_name = 'categorias'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ FILTRO por usuário + ordenação
         return CategoriaItem.objects.select_related('criado_por').filter(
             criado_por=self.request.user
         ).order_by('nome')
@@ -411,11 +426,11 @@ class ItemList(LoginRequiredMixin, ListView):
     template_name = 'listas/item.html'
     model = Item
     context_object_name = 'itens'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO: select_related para categoria + filtro por usuário
         return Item.objects.select_related(
-            'categoria', 
+            'categoria',
             'criado_por'
         ).filter(
             criado_por=self.request.user
@@ -427,48 +442,38 @@ class PedidoList(LoginRequiredMixin, FilterView):
     model = Pedido
     context_object_name = 'pedidos'
     filterset_class = PedidoFilter
-    paginate_by = 20  # Paginação para melhorar performance
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO MÁXIMA: Combina select_related + prefetch_related
-        # Esta é a query mais crítica pois evita N+1 queries em múltiplos níveis:
-        # - pedido.fornecedor.nome e pedido.fornecedor.cidade (select_related)
-        # - pedido.itempedido_set.count() e loop nos itens (prefetch_related)
-        # - item_pedido.item.nome, item_pedido.item.categoria.nome (prefetch aninhado)
-        # - item_pedido.frota.prefixo e item_pedido.frota.descricao (prefetch aninhado)
         return Pedido.objects.select_related(
-            'fornecedor',           # Para pedido.fornecedor.nome
-            'fornecedor__cidade',   # Para pedido.fornecedor.cidade
-            'criado_por'            # Para filtragem por usuário
+            'fornecedor',
+            'fornecedor__cidade',
+            'criado_por'
         ).prefetch_related(
-            'itempedido_set__item',             # Para item_pedido.item.nome
-            'itempedido_set__item__categoria',  # Para item_pedido.item.categoria.nome
-            'itempedido_set__frota'             # Para item_pedido.frota.prefixo e descricao
+            'itempedido_set__item',
+            'itempedido_set__item__categoria',
+            'itempedido_set__frota'
         ).filter(
             criado_por=self.request.user
         ).order_by('-data_pedido')
-    
+
     def get_filterset_kwargs(self, filterset_class):
-        """Passa o request para o filterset para filtrar por usuário"""
         kwargs = super().get_filterset_kwargs(filterset_class)
         kwargs['request'] = self.request
         return kwargs
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Adicionar estatísticas dos filtros aplicados
         filtered_queryset = context['filter'].qs
+
         context['total_filtrado'] = filtered_queryset.count()
         context['total_geral'] = self.get_queryset().count()
-        
-        # Estatísticas por status (dos pedidos filtrados)
         context['stats_status'] = {
             'pendente': filtered_queryset.filter(status='pendente').count(),
             'em_andamento': filtered_queryset.filter(status='em_andamento').count(),
             'finalizado': filtered_queryset.filter(status='finalizado').count(),
         }
-        
+
         return context
 
 
@@ -476,49 +481,16 @@ class ItemPedidoList(LoginRequiredMixin, ListView):
     template_name = 'listas/itempedido.html'
     model = ItemPedido
     context_object_name = 'itens_pedido'
-    
+    paginate_by = 20
+
     def get_queryset(self):
-        # ✅ OTIMIZAÇÃO CRÍTICA: select_related + prefetch para relacionamentos aninhados
-        # Esta query evita múltiplas consultas ao banco ao acessar:
-        # - item_pedido.item.nome e item_pedido.item.categoria.nome
-        # - item_pedido.pedido.fornecedor.nome
-        # - item_pedido.frota.prefixo/descricao
         return ItemPedido.objects.select_related(
-            'item',                     # Para item_pedido.item.nome
-            'item__categoria',          # Para item_pedido.item.categoria.nome
-            'frota',                    # Para item_pedido.frota (opcional)
-            'pedido',                   # Para item_pedido.pedido
-            'pedido__fornecedor',       # Para item_pedido.pedido.fornecedor
-            'criado_por'                # Para filtragem por usuário
+            'item',
+            'item__categoria',
+            'frota',
+            'pedido',
+            'pedido__fornecedor',
+            'criado_por'
         ).filter(
             criado_por=self.request.user
         ).order_by('-id')
-
-#EXEMPLOS AULA 240425
-
-
-# class NomeDoModelCreate(LoginRequiredMixin, CreateView):
-#     template_name = 'cadastros/form.html'
-#     model = NomeDoModel
-#     success_url = reverse_lazy('index')  # Redireciona para a lista após o cadastro
-#     fields = ['nome', 'cpf', 'data_nascimento', 'endereco', 'telefone']
-#     extra_context = {
-#         'titulo': 'Cadastrar NomeDoModel'
-#     }
-
-# #CRIAR TODOS OS CREATES (Cadastrar) - após criar as Views, criar as URLS
-
-# class NomeDoModelUpdate(LoginRequiredMixin, UpdateView):
-#     template_name = 'cadastros/form.html'
-#     model = NomeDoModel
-#     success_url = reverse_lazy('index')  # Redireciona para a lista após a atualização
-#     fields = ['nome', 'cpf', 'data_nascimento', 'endereco', 'telefone']
-#     extra_context = {
-#         'titulo': 'Atualizar NomeDoModel'
-#     }
-
-#     def get_object(self, queryset=None):
-#         self.object = get_object_or_404(NomeDoModel, pk=self.kwargs['pk'], usuario=self.request.user)
-#         return self.object  
-
-# #CRIAR TODOS OS UPDATES (Atualizar) - após criar as Views, criar as URLS
